@@ -1,0 +1,991 @@
+# depslib dependency file v1.0
+1455881182 source:/home/yjdwbj/libuv-server/client.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"core.h"
+	<glib-2.0/glib-object.h>
+	<glib-2.0/glib.h>
+	<json-glib-1.0/json-glib/json-glib.h>
+	<json-glib-1.0/json-glib/json-gobject.h>
+	"json-c/json.h"
+
+1455880268 /home/yjdwbj/libuv-server/core.h
+	<uv.h>
+	<glib.h>
+
+1452222323 /home/yjdwbj/libuv-server/include/uv.h
+	"uv-errno.h"
+	"uv-version.h"
+	<stddef.h>
+	<stdio.h>
+	<stdint.h>
+	"uv-unix.h"
+
+1451294796 /home/yjdwbj/libuv-server/include/uv-errno.h
+	<errno.h>
+
+1451294796 /home/yjdwbj/libuv-server/include/uv-version.h
+
+1451294796 /home/yjdwbj/libuv-server/include/stdint-msvc2008.h
+	<limits.h>
+	<wchar.h>
+
+1451294796 /home/yjdwbj/libuv-server/include/uv-win.h
+	<winsock2.h>
+	<mswsock.h>
+	<ws2tcpip.h>
+	<windows.h>
+	<process.h>
+	<signal.h>
+	<sys/stat.h>
+	"stdint-msvc2008.h"
+	<stdint.h>
+	"tree.h"
+	"uv-threadpool.h"
+
+1451294796 /home/yjdwbj/libuv-server/include/tree.h
+
+1451294796 /home/yjdwbj/libuv-server/include/uv-threadpool.h
+
+1451374046 /home/yjdwbj/libuv-server/include/uv-unix.h
+	<sys/types.h>
+	<sys/stat.h>
+	<fcntl.h>
+	<dirent.h>
+	<sys/socket.h>
+	<netinet/in.h>
+	<netinet/tcp.h>
+	<arpa/inet.h>
+	<netdb.h>
+	<termios.h>
+	<pwd.h>
+	<semaphore.h>
+	<pthread.h>
+	"pthread-fixes.h"
+	<signal.h>
+	"uv-threadpool.h"
+	"uv-linux.h"
+	"uv-aix.h"
+	"uv-sunos.h"
+	"uv-darwin.h"
+	"uv-bsd.h"
+
+1451294796 /home/yjdwbj/libuv-server/include/pthread-fixes.h
+	<pthread.h>
+
+1451294796 /home/yjdwbj/libuv-server/include/uv-linux.h
+
+1451294796 /home/yjdwbj/libuv-server/include/uv-aix.h
+
+1451294796 /home/yjdwbj/libuv-server/include/uv-sunos.h
+	<sys/port.h>
+	<port.h>
+
+1451294796 /home/yjdwbj/libuv-server/include/uv-darwin.h
+	<mach/mach.h>
+	<mach/task.h>
+	<mach/semaphore.h>
+	<TargetConditionals.h>
+
+1451294796 /home/yjdwbj/libuv-server/include/uv-bsd.h
+
+1451353459 /home/yjdwbj/libuv-server/queue.h
+
+1455871027 source:/home/yjdwbj/libuv-server/main.c
+	<stdio.h>
+	<unistd.h>
+	"core.h"
+
+1455879453 source:/home/yjdwbj/libuv-server/server.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<assert.h>
+	<unistd.h>
+	"core.h"
+
+1451294796 source:/home/yjdwbj/libuv-server/src/fs-poll.c
+	"uv.h"
+	"uv-common.h"
+	<assert.h>
+	<stdlib.h>
+	<string.h>
+	"win/internal.h"
+	"win/handle-inl.h"
+
+1451357707 /home/yjdwbj/libuv-server/src/uv-common.h
+	<assert.h>
+	<stdarg.h>
+	<stddef.h>
+	<stdint.h>
+	"uv.h"
+	"tree.h"
+	"queue.h"
+
+1451294796 /home/yjdwbj/libuv-server/src/queue.h
+	<stddef.h>
+
+1451294796 /home/yjdwbj/libuv-server/src/win/internal.h
+	"uv.h"
+	"../uv-common.h"
+	"tree.h"
+	"winapi.h"
+	"winsock.h"
+
+1451294796 /home/yjdwbj/libuv-server/src/win/winapi.h
+	<windows.h>
+
+1451294796 /home/yjdwbj/libuv-server/src/win/winsock.h
+	<winsock2.h>
+	<iptypes.h>
+	<mswsock.h>
+	<ws2tcpip.h>
+	<windows.h>
+	"winapi.h"
+
+1451294796 /home/yjdwbj/libuv-server/src/win/handle-inl.h
+	<assert.h>
+	<io.h>
+	"uv.h"
+	"internal.h"
+
+1451357587 source:/home/yjdwbj/libuv-server/src/inet.c
+	<stdio.h>
+	<string.h>
+	<stdint.h>
+	"uv.h"
+	"uv-common.h"
+
+1451357564 source:/home/yjdwbj/libuv-server/src/threadpool.c
+	"uv-common.h"
+	"unix/internal.h"
+	<stdlib.h>
+
+1451357644 /home/yjdwbj/libuv-server/src/unix/internal.h
+	"uv-common.h"
+	<assert.h>
+	<stdlib.h>
+	<string.h>
+	<fcntl.h>
+	"linux-syscalls.h"
+	<sys/port.h>
+	<port.h>
+	<sys/poll.h>
+	<CoreServices/CoreServices.h>
+
+1451294796 /home/yjdwbj/libuv-server/src/unix/linux-syscalls.h
+	<stdint.h>
+	<signal.h>
+	<sys/types.h>
+	<sys/time.h>
+	<sys/socket.h>
+
+1451294796 /home/yjdwbj/libuv-server/src/win/req-inl.h
+	<assert.h>
+	"uv.h"
+	"internal.h"
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/async.c
+	"uv.h"
+	"internal.h"
+	"atomic-ops.h"
+	<errno.h>
+	<stdio.h>
+	<assert.h>
+	<stdlib.h>
+	<string.h>
+	<unistd.h>
+
+1451357618 /home/yjdwbj/libuv-server/src/unix/atomic-ops.h
+	"internal.h"
+
+1451357833 source:/home/yjdwbj/libuv-server/src/unix/core.c
+	"uv.h"
+	"internal.h"
+	<stddef.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<errno.h>
+	<assert.h>
+	<unistd.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<fcntl.h>
+	<sys/socket.h>
+	<sys/un.h>
+	<netinet/in.h>
+	<arpa/inet.h>
+	<limits.h>
+	<sys/uio.h>
+	<sys/resource.h>
+	<pwd.h>
+	<sys/ioctl.h>
+	<sys/types.h>
+	<sys/wait.h>
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/dl.c
+	"uv.h"
+	"internal.h"
+	<dlfcn.h>
+	<errno.h>
+	<string.h>
+	<locale.h>
+
+1451358140 source:/home/yjdwbj/libuv-server/src/unix/fs.c
+	"uv.h"
+	"internal.h"
+	<errno.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<sys/stat.h>
+	<sys/time.h>
+	<sys/uio.h>
+	<pthread.h>
+	<unistd.h>
+	<fcntl.h>
+	<utime.h>
+	<poll.h>
+	<sys/sendfile.h>
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/getaddrinfo.c
+	"uv.h"
+	"internal.h"
+	<errno.h>
+	<stddef.h>
+	<stdlib.h>
+	<string.h>
+	<netdb.h>
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/getnameinfo.c
+	<assert.h>
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	"uv.h"
+	"internal.h"
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/linux-core.c
+	"uv.h"
+	"internal.h"
+	<stdint.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<assert.h>
+	<errno.h>
+	<net/if.h>
+	<sys/param.h>
+	<sys/prctl.h>
+	<sys/sysinfo.h>
+	<unistd.h>
+	<fcntl.h>
+	<time.h>
+	"android-ifaddrs.h"
+	<ifaddrs.h>
+	<sys/socket.h>
+	<net/ethernet.h>
+	<linux/if_packet.h>
+
+1451294796 /home/yjdwbj/libuv-server/include/android-ifaddrs.h
+	<sys/cdefs.h>
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/linux-inotify.c
+	"uv.h"
+	"tree.h"
+	"internal.h"
+	<stdint.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<assert.h>
+	<errno.h>
+	<sys/types.h>
+	<unistd.h>
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/linux-syscalls.c
+	"linux-syscalls.h"
+	<unistd.h>
+	<signal.h>
+	<sys/syscall.h>
+	<sys/types.h>
+	<errno.h>
+	<sanitizer/msan_interface.h>
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/loop-watcher.c
+	"uv.h"
+	"internal.h"
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/loop.c
+	"uv.h"
+	"tree.h"
+	"internal.h"
+	"heap-inl.h"
+	<stdlib.h>
+	<string.h>
+	<unistd.h>
+
+1451294796 /home/yjdwbj/libuv-server/src/heap-inl.h
+	<stddef.h>
+
+1451358523 source:/home/yjdwbj/libuv-server/src/unix/pipe.c
+	"uv.h"
+	"internal.h"
+	<assert.h>
+	<errno.h>
+	<string.h>
+	<sys/un.h>
+	<unistd.h>
+	<stdlib.h>
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/poll.c
+	"uv.h"
+	"internal.h"
+	<unistd.h>
+	<assert.h>
+	<errno.h>
+
+1451358440 source:/home/yjdwbj/libuv-server/src/unix/process.c
+	"uv.h"
+	"internal.h"
+	<stdio.h>
+	<stdlib.h>
+	<assert.h>
+	<errno.h>
+	<sys/types.h>
+	<sys/wait.h>
+	<unistd.h>
+	<fcntl.h>
+	<poll.h>
+	<crt_externs.h>
+	<grp.h>
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/proctitle.c
+	"uv.h"
+	"internal.h"
+	<stdlib.h>
+	<string.h>
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/pthread-fixes.c
+	<errno.h>
+	<pthread.h>
+	<signal.h>
+	"pthread-fixes.h"
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/signal.c
+	"uv.h"
+	"internal.h"
+	<assert.h>
+	<errno.h>
+	<signal.h>
+	<stdlib.h>
+	<string.h>
+	<unistd.h>
+
+1452223747 source:/home/yjdwbj/libuv-server/src/unix/stream.c
+	"uv.h"
+	"internal.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<assert.h>
+	<errno.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<sys/uio.h>
+	<sys/un.h>
+	<unistd.h>
+	<limits.h>
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/tcp.c
+	"uv.h"
+	"internal.h"
+	<stdlib.h>
+	<unistd.h>
+	<assert.h>
+	<errno.h>
+
+1451358372 source:/home/yjdwbj/libuv-server/src/unix/thread.c
+	"uv.h"
+	"internal.h"
+	<pthread.h>
+	<assert.h>
+	<errno.h>
+	<sys/time.h>
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/timer.c
+	"uv.h"
+	"internal.h"
+	"heap-inl.h"
+	<assert.h>
+	<limits.h>
+
+1451294796 source:/home/yjdwbj/libuv-server/src/unix/tty.c
+	"uv.h"
+	"internal.h"
+	"spinlock.h"
+	<assert.h>
+	<unistd.h>
+	<termios.h>
+	<errno.h>
+	<sys/ioctl.h>
+
+1451294796 /home/yjdwbj/libuv-server/src/unix/spinlock.h
+	"internal.h"
+	"atomic-ops.h"
+
+1451358191 source:/home/yjdwbj/libuv-server/src/unix/udp.c
+	"uv.h"
+	"internal.h"
+	<assert.h>
+	<string.h>
+	<errno.h>
+	<stdlib.h>
+	<unistd.h>
+
+1451361017 source:/home/yjdwbj/libuv-server/src/uv-common.c
+	"uv.h"
+	"uv-common.h"
+	<stdio.h>
+	<assert.h>
+	<stdarg.h>
+	<stddef.h>
+	<stdlib.h>
+	<string.h>
+	<net/if.h>
+
+1451294796 source:/home/yjdwbj/libuv-server/src/version.c
+	"uv.h"
+
+1451372703 /home/yjdwbj/libuv-server/json-c/json.h
+	"debug.h"
+	"linkhash.h"
+	"arraylist.h"
+	"json_util.h"
+	"json_object.h"
+	"json_tokener.h"
+	"json_object_iterator.h"
+	"json_c_version.h"
+
+1451372703 /home/yjdwbj/libuv-server/json-c/debug.h
+	<stdlib.h>
+
+1451372703 /home/yjdwbj/libuv-server/json-c/linkhash.h
+	"json_object.h"
+
+1451372703 /home/yjdwbj/libuv-server/json-c/json_object.h
+	"json_inttypes.h"
+
+1451372703 /home/yjdwbj/libuv-server/json-c/json_inttypes.h
+	"json_config.h"
+	<inttypes.h>
+	<stdint.h>
+
+1451373772 /home/yjdwbj/libuv-server/json-c/json_config.h
+
+1451372703 /home/yjdwbj/libuv-server/json-c/arraylist.h
+
+1451372703 /home/yjdwbj/libuv-server/json-c/json_util.h
+	"json_object.h"
+
+1451372703 /home/yjdwbj/libuv-server/json-c/json_tokener.h
+	<stddef.h>
+	"json_object.h"
+
+1451372703 /home/yjdwbj/libuv-server/json-c/json_object_iterator.h
+	<stddef.h>
+
+1451372703 /home/yjdwbj/libuv-server/json-c/json_c_version.h
+
+1451372708 source:/home/yjdwbj/libuv-server/json-c/arraylist.c
+	"config.h"
+	<stdlib.h>
+	<string.h>
+	<strings.h>
+	"arraylist.h"
+
+1451373772 /home/yjdwbj/libuv-server/json-c/config.h
+
+1451372708 source:/home/yjdwbj/libuv-server/json-c/debug.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stdarg.h>
+	<syslog.h>
+	<unistd.h>
+	<sys/param.h>
+	"debug.h"
+
+1451372708 source:/home/yjdwbj/libuv-server/json-c/json_c_version.c
+	"config.h"
+	"json_c_version.h"
+
+1451372708 source:/home/yjdwbj/libuv-server/json-c/json_object.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<stddef.h>
+	<string.h>
+	<math.h>
+	<errno.h>
+	"debug.h"
+	"printbuf.h"
+	"linkhash.h"
+	"arraylist.h"
+	"json_inttypes.h"
+	"json_object.h"
+	"json_object_private.h"
+	"json_util.h"
+	"math_compat.h"
+
+1451372703 /home/yjdwbj/libuv-server/json-c/printbuf.h
+
+1451372703 /home/yjdwbj/libuv-server/json-c/json_object_private.h
+
+1451372703 /home/yjdwbj/libuv-server/json-c/math_compat.h
+	<float.h>
+	<float.h>
+	<float.h>
+
+1451372708 source:/home/yjdwbj/libuv-server/json-c/json_object_iterator.c
+	<stddef.h>
+	"json.h"
+	"json_object_private.h"
+	"json_object_iterator.h"
+
+1451372708 source:/home/yjdwbj/libuv-server/json-c/json_tokener.c
+	"config.h"
+	<math.h>
+	"math_compat.h"
+	<stdio.h>
+	<stdlib.h>
+	<stddef.h>
+	<ctype.h>
+	<string.h>
+	<limits.h>
+	"debug.h"
+	"printbuf.h"
+	"arraylist.h"
+	"json_inttypes.h"
+	"json_object.h"
+	"json_tokener.h"
+	"json_util.h"
+	<locale.h>
+
+1451372708 source:/home/yjdwbj/libuv-server/json-c/json_util.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<stddef.h>
+	<limits.h>
+	<string.h>
+	<errno.h>
+	<ctype.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<fcntl.h>
+	<unistd.h>
+	<windows.h>
+	<io.h>
+	"debug.h"
+	"printbuf.h"
+	"json_inttypes.h"
+	"json_object.h"
+	"json_tokener.h"
+	"json_util.h"
+
+1451372708 source:/home/yjdwbj/libuv-server/json-c/libjson.c
+	<sys/cdefs.h>
+	"json_object.h"
+
+1451372708 source:/home/yjdwbj/libuv-server/json-c/linkhash.c
+	"config.h"
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	<stdarg.h>
+	<stddef.h>
+	<limits.h>
+	<endian.h>
+	<windows.h>
+	"random_seed.h"
+	"linkhash.h"
+
+1451372703 /home/yjdwbj/libuv-server/json-c/random_seed.h
+
+1451372708 source:/home/yjdwbj/libuv-server/json-c/printbuf.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stdarg.h>
+	"debug.h"
+	"printbuf.h"
+
+1451372708 source:/home/yjdwbj/libuv-server/json-c/random_seed.c
+	<stdio.h>
+	"config.h"
+	"random_seed.h"
+	<string.h>
+	<fcntl.h>
+	<unistd.h>
+	<errno.h>
+	<stdlib.h>
+	<sys/stat.h>
+	<windows.h>
+	<wincrypt.h>
+	<time.h>
+
+1415735840 /usr/include/glib-2.0/glib.h
+	<glib/galloca.h>
+	<glib/garray.h>
+	<glib/gasyncqueue.h>
+	<glib/gatomic.h>
+	<glib/gbacktrace.h>
+	<glib/gbase64.h>
+	<glib/gbitlock.h>
+	<glib/gbookmarkfile.h>
+	<glib/gbytes.h>
+	<glib/gcharset.h>
+	<glib/gchecksum.h>
+	<glib/gconvert.h>
+	<glib/gdataset.h>
+	<glib/gdate.h>
+	<glib/gdatetime.h>
+	<glib/gdir.h>
+	<glib/genviron.h>
+	<glib/gerror.h>
+	<glib/gfileutils.h>
+	<glib/ggettext.h>
+	<glib/ghash.h>
+	<glib/ghmac.h>
+	<glib/ghook.h>
+	<glib/ghostutils.h>
+	<glib/giochannel.h>
+	<glib/gkeyfile.h>
+	<glib/glist.h>
+	<glib/gmacros.h>
+	<glib/gmain.h>
+	<glib/gmappedfile.h>
+	<glib/gmarkup.h>
+	<glib/gmem.h>
+	<glib/gmessages.h>
+	<glib/gnode.h>
+	<glib/goption.h>
+	<glib/gpattern.h>
+	<glib/gpoll.h>
+	<glib/gprimes.h>
+	<glib/gqsort.h>
+	<glib/gquark.h>
+	<glib/gqueue.h>
+	<glib/grand.h>
+	<glib/gregex.h>
+	<glib/gscanner.h>
+	<glib/gsequence.h>
+	<glib/gshell.h>
+	<glib/gslice.h>
+	<glib/gslist.h>
+	<glib/gspawn.h>
+	<glib/gstrfuncs.h>
+	<glib/gstring.h>
+	<glib/gstringchunk.h>
+	<glib/gtestutils.h>
+	<glib/gthread.h>
+	<glib/gthreadpool.h>
+	<glib/gtimer.h>
+	<glib/gtimezone.h>
+	<glib/gtrashstack.h>
+	<glib/gtree.h>
+	<glib/gtypes.h>
+	<glib/gunicode.h>
+	<glib/gurifuncs.h>
+	<glib/gutils.h>
+	<glib/gvarianttype.h>
+	<glib/gvariant.h>
+	<glib/gversion.h>
+	<glib/gversionmacros.h>
+	<glib/gwin32.h>
+	<glib/deprecated/gallocator.h>
+	<glib/deprecated/gcache.h>
+	<glib/deprecated/gcompletion.h>
+	<glib/deprecated/gmain.h>
+	<glib/deprecated/grel.h>
+	<glib/deprecated/gthread.h>
+
+1415735840 /usr/include/glib-2.0/glib/galloca.h
+	<glib/gtypes.h>
+	<alloca.h>
+	<alloca.h>
+	<malloc.h>
+
+1415735840 /usr/include/glib-2.0/glib/gtypes.h
+	<glibconfig.h>
+	<glib/gmacros.h>
+	<glib/gversionmacros.h>
+	<time.h>
+
+1415735840 /usr/include/glib-2.0/glib/gmacros.h
+	<stddef.h>
+
+1415735840 /usr/include/glib-2.0/glib/gversionmacros.h
+
+1415735840 /usr/include/glib-2.0/glib/garray.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gasyncqueue.h
+	<glib/gthread.h>
+
+1415735840 /usr/include/glib-2.0/glib/gthread.h
+	<glib/gatomic.h>
+	<glib/gerror.h>
+
+1415735840 /usr/include/glib-2.0/glib/gatomic.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gerror.h
+	<stdarg.h>
+	<glib/gquark.h>
+
+1415735840 /usr/include/glib-2.0/glib/gquark.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gbacktrace.h
+	<glib/gtypes.h>
+	<signal.h>
+
+1415735840 /usr/include/glib-2.0/glib/gbase64.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gbitlock.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gbookmarkfile.h
+	<glib/gerror.h>
+	<time.h>
+
+1415735840 /usr/include/glib-2.0/glib/gbytes.h
+	<glib/gtypes.h>
+	<glib/garray.h>
+
+1415735840 /usr/include/glib-2.0/glib/gcharset.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gchecksum.h
+	<glib/gtypes.h>
+	<glib/gbytes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gconvert.h
+	<glib/gerror.h>
+
+1415735840 /usr/include/glib-2.0/glib/gdataset.h
+	<glib/gquark.h>
+
+1415735840 /usr/include/glib-2.0/glib/gdate.h
+	<time.h>
+	<glib/gtypes.h>
+	<glib/gquark.h>
+
+1415735840 /usr/include/glib-2.0/glib/gdatetime.h
+	<glib/gtimezone.h>
+
+1415735840 /usr/include/glib-2.0/glib/gtimezone.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gdir.h
+	<glib/gerror.h>
+	<dirent.h>
+
+1415735840 /usr/include/glib-2.0/glib/genviron.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gfileutils.h
+	<glib/gerror.h>
+
+1415735840 /usr/include/glib-2.0/glib/ggettext.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/ghash.h
+	<glib/gtypes.h>
+	<glib/glist.h>
+
+1415735840 /usr/include/glib-2.0/glib/glist.h
+	<glib/gmem.h>
+	<glib/gnode.h>
+
+1415735840 /usr/include/glib-2.0/glib/gmem.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gnode.h
+	<glib/gmem.h>
+
+1415735840 /usr/include/glib-2.0/glib/ghmac.h
+	<glib/gtypes.h>
+	"gchecksum.h"
+
+1415735840 /usr/include/glib-2.0/glib/ghook.h
+	<glib/gmem.h>
+
+1415735840 /usr/include/glib-2.0/glib/ghostutils.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/giochannel.h
+	<glib/gconvert.h>
+	<glib/gmain.h>
+	<glib/gstring.h>
+
+1415735840 /usr/include/glib-2.0/glib/gmain.h
+	<glib/gpoll.h>
+	<glib/gslist.h>
+	<glib/gthread.h>
+
+1415735840 /usr/include/glib-2.0/glib/gpoll.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gslist.h
+	<glib/gmem.h>
+	<glib/gnode.h>
+
+1415735840 /usr/include/glib-2.0/glib/gstring.h
+	<glib/gtypes.h>
+	<glib/gunicode.h>
+	<glib/gbytes.h>
+	<glib/gutils.h>
+
+1415735840 /usr/include/glib-2.0/glib/gunicode.h
+	<glib/gerror.h>
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gutils.h
+	<glib/gtypes.h>
+	<stdarg.h>
+
+1415735840 /usr/include/glib-2.0/glib/gkeyfile.h
+	<glib/gerror.h>
+
+1415735840 /usr/include/glib-2.0/glib/gmappedfile.h
+	<glib/gbytes.h>
+	<glib/gerror.h>
+
+1415735840 /usr/include/glib-2.0/glib/gmarkup.h
+	<stdarg.h>
+	<glib/gerror.h>
+	<glib/gslist.h>
+
+1415735840 /usr/include/glib-2.0/glib/gmessages.h
+	<stdarg.h>
+	<glib/gtypes.h>
+	<glib/gmacros.h>
+
+1415735840 /usr/include/glib-2.0/glib/goption.h
+	<glib/gerror.h>
+	<glib/gquark.h>
+
+1415735840 /usr/include/glib-2.0/glib/gpattern.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gprimes.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gqsort.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gqueue.h
+	<glib/glist.h>
+
+1415735840 /usr/include/glib-2.0/glib/grand.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gregex.h
+	<glib/gerror.h>
+	<glib/gstring.h>
+
+1415735840 /usr/include/glib-2.0/glib/gscanner.h
+	<glib/gdataset.h>
+	<glib/ghash.h>
+
+1415735840 /usr/include/glib-2.0/glib/gsequence.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gshell.h
+	<glib/gerror.h>
+
+1415735840 /usr/include/glib-2.0/glib/gslice.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gspawn.h
+	<glib/gerror.h>
+
+1415735840 /usr/include/glib-2.0/glib/gstrfuncs.h
+	<stdarg.h>
+	<glib/gmacros.h>
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gstringchunk.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gtestutils.h
+	<glib/gmessages.h>
+	<glib/gstring.h>
+	<glib/gerror.h>
+	<glib/gslist.h>
+
+1415735840 /usr/include/glib-2.0/glib/gthreadpool.h
+	<glib/gthread.h>
+
+1415735840 /usr/include/glib-2.0/glib/gtimer.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gtrashstack.h
+	<glib/gutils.h>
+
+1415735840 /usr/include/glib-2.0/glib/gtree.h
+	<glib/gnode.h>
+
+1415735840 /usr/include/glib-2.0/glib/gurifuncs.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gvarianttype.h
+	<glib/gmessages.h>
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gvariant.h
+	<glib/gvarianttype.h>
+	<glib/gstring.h>
+	<glib/gbytes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gversion.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/gwin32.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/deprecated/gallocator.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/deprecated/gcache.h
+	<glib/glist.h>
+
+1415735840 /usr/include/glib-2.0/glib/deprecated/gcompletion.h
+	<glib/glist.h>
+
+1415735840 /usr/include/glib-2.0/glib/deprecated/gmain.h
+	<glib/gmain.h>
+
+1415735840 /usr/include/glib-2.0/glib/deprecated/grel.h
+	<glib/gtypes.h>
+
+1415735840 /usr/include/glib-2.0/glib/deprecated/gthread.h
+	<glib/gthread.h>
+	<sys/types.h>
+	<pthread.h>
+
+1415735840 /usr/lib/x86_64-linux-gnu/glib-2.0/include//glibconfig.h
+	<glib/gmacros.h>
+	<limits.h>
+	<float.h>
+
