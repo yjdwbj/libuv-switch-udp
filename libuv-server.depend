@@ -1,16 +1,12 @@
 # depslib dependency file v1.0
-1455881182 source:/home/yjdwbj/libuv-server/client.c
+1456142396 source:/home/yjdwbj/libuv-server/client.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	"core.h"
-	<glib-2.0/glib-object.h>
-	<glib-2.0/glib.h>
-	<json-glib-1.0/json-glib/json-glib.h>
-	<json-glib-1.0/json-glib/json-gobject.h>
 	"json-c/json.h"
 
-1455880268 /home/yjdwbj/libuv-server/core.h
+1456140579 /home/yjdwbj/libuv-server/core.h
 	<uv.h>
 	<glib.h>
 
@@ -92,12 +88,12 @@
 
 1451353459 /home/yjdwbj/libuv-server/queue.h
 
-1455871027 source:/home/yjdwbj/libuv-server/main.c
+1456142264 source:/home/yjdwbj/libuv-server/main.c
 	<stdio.h>
 	<unistd.h>
 	"core.h"
 
-1455879453 source:/home/yjdwbj/libuv-server/server.c
+1456142207 source:/home/yjdwbj/libuv-server/server.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -269,7 +265,7 @@
 	"uv.h"
 	"internal.h"
 
-1451294796 source:/home/yjdwbj/libuv-server/src/unix/linux-core.c
+1456129019 source:/home/yjdwbj/libuv-server/src/unix/linux-core.c
 	"uv.h"
 	"internal.h"
 	<stdint.h>
@@ -386,7 +382,7 @@
 	<string.h>
 	<unistd.h>
 
-1452223747 source:/home/yjdwbj/libuv-server/src/unix/stream.c
+1456126727 source:/home/yjdwbj/libuv-server/src/unix/stream.c
 	"uv.h"
 	"internal.h"
 	<stdio.h>

@@ -42,12 +42,7 @@ int server_initialize(uv_loop_t* loop, struct server* server)
     server->loop = loop;
     //TAILQ_INIT(&server->clients);
     /* 初始化hash 表 */
-    if(server->stype)
-    {
-        server->c_gtable = g_hash_table_new(g_str_hash,g_str_equal);
-    }
-    else
-        server->c_gtable = g_hash_table_new(g_int_hash,g_int_equal);
+
 
     return 0;
 }
@@ -114,7 +109,7 @@ static void _on_connect(uv_stream_t* stream, int status)
         free(client);
         return;
     }
-    uv_stream_t *c_stream = (uv_stream_t*)&client->socket;
+
 
 
     client_read(client); /* 读取客户端*/
@@ -200,5 +195,17 @@ int server_start(struct server* server,struct sockaddr_in* addr)
 
 void server_detach(struct server* server, struct client* client)
 {
-    //TAILQ_REMOVE(&client->server->clients, client, link);
+    if (server->stype)
+    {
+        if(client->uuid)
+        {
+            g_hash_table_remove(server->c_gtable,client->uuid);
+
+        }
+
+    }else{
+        g_hash_table_remove(server->c_gtable,&client->socket.io_watcher.fd);
+    }
+
+//    TAILQ_REMOVE(&client->server->clients, client, link);
 }

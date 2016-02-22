@@ -47,27 +47,16 @@ int get_cpu_count()
 }
 
 
-static void dev_thread_entry(void *arg)
-{
-
-    T_THREADOBJ* t = (T_THREADOBJ*)arg;
-    uv_loop_t* dev_loop;
-    dev_loop = uv_default_loop();
-    struct sockaddr_in dev_addr;
-	uv_ip4_addr("0.0.0.0", 5560,&dev_addr);
-	server_initialize(dev_loop, &dev_server);
-	dev_server.stype = DEV_SRV;
-	dev_server.part_server = &app_server;
-	server_start(&dev_server,&dev_addr);
-    uv_run(dev_loop, UV_RUN_DEFAULT);
-    server_destroy(&dev_server);
-}
-
 static void srv_thread_entry(void *arg)
 {
     T_THREADARG* t = (T_THREADARG*)arg;
     uv_run(t->loop_, UV_RUN_DEFAULT);
+       g_hash_table_remove_all(t->server_->c_gtable);
+    g_hash_table_destroy(t->server_->c_gtable);
     server_destroy(t->server_);
+    uv_stop(t->loop_);
+    uv_loop_delete(t->loop_);
+    free(t->loop_);
 }
 
 
@@ -89,15 +78,18 @@ int main(int argc, char** argv)
 	struct sockaddr_in app_addr;
 	uv_ip4_addr("0.0.0.0", 5561,&app_addr);
 
+
 	server_initialize(dev_loop, &dev_server);
 	server_initialize(app_loop, &app_server);
-
-
 	dev_server.stype = DEV_SRV;
+	app_server.stype = APP_SRV;
+    dev_server.c_gtable = g_hash_table_new(g_str_hash,g_str_equal);
+    app_server.c_gtable = g_hash_table_new(g_int_hash,g_int_equal);
+
 	dev_server.part_server = &app_server;
 	server_start(&dev_server,&dev_addr);
 
-	app_server.stype = APP_SRV;
+
 	app_server.part_server = &dev_server;
 	server_start(&app_server,&app_addr);
 
@@ -127,11 +119,14 @@ int main(int argc, char** argv)
     }
     uv_thread_join(&dev_th);
     uv_thread_join(&app_th);
-    while (1) {
-        usleep(1000);
-    }
 
+/*
+    g_hash_table_remove_all(dev_server.c_gtable);
+    g_hash_table_destroy(dev_server.c_gtable);
+    g_hash_table_remove_all(app_server.c_gtable);
+    g_hash_table_destroy(app_server.c_gtable);
 
+*/
 
 
 

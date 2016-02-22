@@ -814,7 +814,7 @@ static void uv__read(uv_stream_t* stream) {
         /* Wait for the next one. */
         if (stream->flags & UV_STREAM_READING) {
           uv__io_start(stream->loop, &stream->io_watcher, UV__POLLIN);
-          uv__stream_osx_interrupt_select(stream);
+        //  uv__stream_osx_interrupt_select(stream);
         }
         stream->read_cb(stream, 0, &buf);
       } else {
@@ -825,7 +825,7 @@ static void uv__read(uv_stream_t* stream) {
           uv__io_stop(stream->loop, &stream->io_watcher, UV__POLLIN);
           if (!uv__io_active(&stream->io_watcher, UV__POLLOUT))
             uv__handle_stop(stream);
-          uv__stream_osx_interrupt_select(stream);
+       //   uv__stream_osx_interrupt_select(stream);
         }
       }
       return;
@@ -881,7 +881,7 @@ int uv_shutdown(uv_shutdown_t* req, uv_stream_t* stream, uv_shutdown_cb cb) {
   stream->flags |= UV_STREAM_SHUTTING;
 
   uv__io_start(stream->loop, &stream->io_watcher, UV__POLLOUT);
-  uv__stream_osx_interrupt_select(stream);
+ // uv__stream_osx_interrupt_select(stream);
 
   return 0;
 }
@@ -1172,7 +1172,7 @@ int uv_read_start(uv_stream_t* stream,
 
   uv__io_start(stream->loop, &stream->io_watcher, UV__POLLIN);
   uv__handle_start(stream);
-  uv__stream_osx_interrupt_select(stream);
+ // uv__stream_osx_interrupt_select(stream);
 
   return 0;
 }

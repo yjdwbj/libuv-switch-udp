@@ -30,13 +30,6 @@
 #include <string.h>
 
 #include "core.h"
-/*
-#include <glib-2.0/glib-object.h>
-#include <glib-2.0/glib.h>
-#include <json-glib-1.0/json-glib/json-glib.h>
-#include <json-glib-1.0/json-glib/json-gobject.h>
-
-*/
 
 #include "json-c/json.h"
 
@@ -185,6 +178,7 @@ int client_initialize(struct client* client, struct server* server)
 
 void client_destroy(struct client* client)
 {
+
     if (client == NULL) return;
 
     if (client->command != NULL) free(client->command);
@@ -197,8 +191,8 @@ static void _on_alloc_buffer(uv_handle_t* handle, size_t suggested_size,uv_buf_t
     client = handle->data;
 
     memset(client->buffer, 0, sizeof(client->buffer));
-
-    uv_buf_t t =  uv_buf_init(client->buffer, sizeof(client->buffer));
+    uv_buf_t t = { NULL, 0 };
+    t =  uv_buf_init(client->buffer, sizeof(client->buffer));
     buf->base = t.base;
     buf->len = t.len;
 }
@@ -225,7 +219,7 @@ static char *make_packets(char *json )
 
     char *data = (char *)malloc(n+6);
     memcpy(&data[2],json,n);
-    strncpy(data,SUFIX,4);
+    strncpy(data,(char*)SUFIX,4);
     return data;
 }
 
@@ -242,69 +236,69 @@ static void dev_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
     }
     if (nread < 0)
     {
-        fprintf(stderr, "The client disconnected\n");
+        fprintf(stderr, "DEV The client disconnected\n");
         server_detach(client->server, client);
         client_disconnect(client, _on_disconnect);
         return;
     }
-    fprintf(stderr, "Client read: %s\n", buf->base);
+    fprintf(stderr, "DEV Client read: %s\n", buf->base);
     //parser_to_json(buf->base);
 
     /*分析jso段*/
     struct json_object * jobj = json_tokener_parse(&(buf->base[2]));
-    printf("dev read json obj.to_string() = %s\n",
-           json_object_to_json_string(jobj));
+    if(!jobj)
+    {
+        server_detach(client->server, client);
+        client_disconnect(client, _on_disconnect);
+        return;
+
+    }
+   // printf("dev read json obj.to_string() = %s\n",
+    //       json_object_to_json_string(jobj));
 
     struct json_object* obj = json_object_object_get(jobj,CMD);
-    char *cmd = json_object_get_string(obj);
-    uv_write_t* wr;
-    wr = (uv_write_t*)malloc(sizeof(*wr));
+    const char *cmd = json_object_get_string(obj);
+    int clen = strlen(cmd);
+    json_object_put(obj);
+    uv_write_t wr;
 
-    uv_buf_t sbuf;
+    uv_buf_t sbuf = { NULL, 0 };
     if (!cmd)
     {
-        sbuf = uv_buf_init((char*)unkown_format,strlen(unkown_cmd));
-        int r = uv_write(wr,stream,&sbuf,1,NULL);
+        sbuf = uv_buf_init((char*)unkown_format,sizeof(unkown_cmd));
+        uv_write(&wr,stream,&sbuf,1,NULL);
         /*未定义的key,应该断开本连接 */
 
         server_detach(client->server, client);
         client_disconnect(client, _on_disconnect);
-         free(wr);
+
         return ;
     }
 
-    printf("dev get command %s\n",cmd);
-    if (!strcmp(cmd,LOGIN))
+   // printf("dev get command %s\n",cmd);
+    if (!strncmp(cmd,LOGIN,clen))
     {
         /*登录命令*/
         //  struct json_object* uobj = json_object_object_get(jobj,"uuid");
-
-
         client->uuid = json_object_get_string(json_object_object_get(jobj,UUID));
         // struct json_object* pobj = json_object_object_get(jobj,"pwd");
         client->pwd =json_object_get_string(json_object_object_get(jobj,PWD));
         /* 添加本客户端到链表里*/
         //g_hash_table_insert(server->c_gtable,stream->u.fd ,(gpointer)client);
-        g_hash_table_insert(client->server->c_gtable,
-                            client->uuid,(gpointer)client);
 
-        char jdata[] = "{\"msg\":\"ok\"}";
-        int jlen = strlen(jdata)+2;
-        char *nbuf = (char *)malloc(jlen+4);
-        nbuf[0] = jlen & 0xff00;
-        nbuf[1] = jlen & 0xff;
-        memcpy(&nbuf[2],jdata,jlen-2);
-        memcpy(&nbuf[jlen],(char*)SUFIX,4);
-        //strncpy(nbuf[jlen],SUFIX,4);
-        sbuf = uv_buf_init(nbuf,jlen+4);
-        int r = uv_write(wr,stream,&sbuf,1,NULL);
+        printf(" srv type %d\b",client->server->stype);
+        g_hash_table_insert(client->server->c_gtable,
+                            (gpointer)client->uuid,(gpointer)client);
+
+        sbuf = uv_buf_init(&msg_ok,sizeof(msg_ok));
+        int r = uv_write(&wr,stream,&sbuf,1,NULL);
     }
-    else if(!strcmp(cmd,"keep"))
+    else if(!strncmp(cmd,KEEP,clen))
     {
         /*心跳包*/
-        int r = uv_write(wr,stream,buf,1,NULL);
+        int r = uv_write(&wr,stream,buf,1,NULL);
     }
-    else if(!strcmp(cmd,CONN))
+    else if(!strncmp(cmd,CONN,clen))
     {
 
         /*连接请求*/
@@ -328,19 +322,24 @@ static void dev_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
             memcpy(&connbuf[2],jdata,connlen-2);
             memcpy(&connbuf[connlen],(char*)SUFIX,4);
             uv_write_t* wr;
-            uv_buf_t sbuf;
+
             sbuf = uv_buf_init(connbuf,connlen+4);
-            wr = (uv_write_t*)malloc(sizeof(*wr));
-            int r = uv_write(wr,(uv_stream_t*)&appclient->socket,&sbuf,1,NULL);
+            //wr = (uv_write_t*)malloc(sizeof(*wr));
+            int r = uv_write(&wr,(uv_stream_t*)&appclient->socket,&sbuf,1,NULL);
+            json_object_put(connjson);
+            free(connbuf);
         }
 
     }
     else
     {
         /*未知命令*/
-        sbuf = uv_buf_init((char*)unkown_cmd,strlen(unkown_cmd));
-        int r = uv_write(wr,stream,&sbuf,1,NULL);
+        sbuf = uv_buf_init((char*)unkown_cmd,sizeof(unkown_cmd));
+        int r = uv_write(&wr,stream,&sbuf,1,NULL);
     }
+   // json_object_put(jobj); // 清理内存
+
+
 
 }
 
@@ -355,30 +354,37 @@ static void app_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
     {
         return;
     }
-    if (nread < 0)
+    if (nread < 0 )
     {
-        fprintf(stderr, "The client disconnected\n");
+       // fprintf(stderr, "APP The client disconnected,recv %s \t, str len %d\n",
+       //         buf->base,strlen(buf->base));
         server_detach(client->server, client);
         client_disconnect(client, _on_disconnect);
         return;
     }
 
-    fprintf(stderr, "Client read: %s\n", buf->base);
+    uv_buf_t sbuf = { NULL, 0 };
+    fprintf(stderr, "APP Client read: %s\t ,len %d\n", buf->base,strlen(buf->base));
     //parser_to_json(buf->base);
     /*分析jso段*/
     struct json_object * jobj = json_tokener_parse(&(buf->base[2]));
-    printf("app recv json obj.to_string() = %s\n",
+    if (jobj)
+    {
+            printf("app recv json obj.to_string() = %s\n",
            json_object_to_json_string(jobj));
+    }
+    uv_write_t wr;
 
     //printf("uuid is %s\n",clinet->uuid);
     struct json_object* cmdobj = json_object_object_get(jobj,CMD);
     char *cmd = json_object_get_string(cmdobj);
     if (!cmd)
     {
-        uv_buf_t sbuf;
-        uv_write_t* wr;
-        sbuf = uv_buf_init((char*)unkown_cmd,strlen(unkown_cmd));
-        int r = uv_write(wr,stream,&sbuf,1,NULL);
+        printf("recv unkown cmd, %s\n",buf->base);
+
+
+        sbuf = uv_buf_init((char*)unkown_cmd,sizeof(unkown_cmd));
+        int r = uv_write(&wr,stream,&sbuf,1,NULL);
         server_detach(client->server, client);
          client_disconnect(client, _on_disconnect);
          /*未定义的key,应该断开本连接 */
@@ -389,12 +395,13 @@ static void app_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
         /*登录命令*/
 
         struct json_object* uuidjson =  json_object_object_get(jobj,UUID);
-        char *uvalue = json_object_get_string(uuidjson);
+        const char *uvalue = json_object_get_string(uuidjson);
         // struct json_object* pobj = json_object_object_get(jobj,"pwd");
         struct json_object* pwdjson =  json_object_object_get(jobj,PWD);
-        char *pvalue = json_object_get_string(pwdjson);
+        const char *pvalue = json_object_get_string(pwdjson);
         struct client* devclient = g_hash_table_lookup(client->server->part_server->c_gtable,
                                    (gpointer)uvalue);
+      //  printf("auth pwd %s\t , db pwd %s\n",pvalue,devclient->pwd);
         if ((devclient != NULL) && !strcmp(pvalue,
                                            devclient->pwd))
         {
@@ -414,7 +421,7 @@ static void app_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
             json_object_object_add(connjson,ADDR,json_object_object_get(jobj,ADDR));
             json_object_object_add(connjson,AID,json_object_new_int(client->socket.io_watcher.fd));
             // printf("get json string len %d\n", json_object_get_string_len(connjson));
-            printf("json string data %s\n",json_object_to_json_string(connjson));
+            //printf("json string data %s\n",json_object_to_json_string(connjson));
             const char *jdata = json_object_to_json_string(connjson);
             int connlen = strlen(jdata)+2;
             char *connbuf = (char *)malloc(connlen+4);
@@ -422,22 +429,26 @@ static void app_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
             connbuf[1] = connlen & 0xff;
             memcpy(&connbuf[2],jdata,connlen-2);
             memcpy(&connbuf[connlen],(char*)SUFIX,4);
-            uv_write_t* wr;
-            uv_buf_t sbuf;
+
             sbuf = uv_buf_init(connbuf,connlen+4);
-            wr = (uv_write_t*)malloc(sizeof(*wr));
-            int r = uv_write(wr,(uv_stream_t*)&devclient->socket,&sbuf,1,NULL);
+
+            int r = uv_write(&wr,(uv_stream_t*)&devclient->socket,&sbuf,1,NULL);
             //  printf("conn data is %s\n",sbuf.base);
             printf("app auth ok send msg to dev\n");
+            free(connbuf);
         }
 
     }else{
         /*未知命令*/
-        uv_buf_t sbuf;
-        uv_write_t* wr;
+
+
         sbuf = uv_buf_init((char*)unkown_cmd,strlen(unkown_cmd));
-        int r = uv_write(wr,stream,&sbuf,1,NULL);
+        int r = uv_write(&wr,stream,&sbuf,1,NULL);
+
+
     }
+    json_object_put(jobj);
+
 
 }
 
