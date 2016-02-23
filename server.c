@@ -34,6 +34,8 @@
 
 #include "core.h"
 
+extern GHashTable *app_table;
+extern GHashTable *dev_table;
 
 int server_initialize(uv_loop_t* loop, struct server* server)
 {
@@ -199,12 +201,14 @@ void server_detach(struct server* server, struct client* client)
     {
         if(client->uuid)
         {
-            g_hash_table_remove(server->c_gtable,client->uuid);
+          //  g_hash_table_remove(server->c_gtable,client->uuid);
+            g_hash_table_remove(dev_table,client->uuid);
 
         }
 
     }else{
-        g_hash_table_remove(server->c_gtable,&client->socket.io_watcher.fd);
+     //   g_hash_table_remove(server->c_gtable,&client->socket.io_watcher.fd);
+        g_hash_table_remove(app_table,&client->socket.io_watcher.fd);
     }
 
 //    TAILQ_REMOVE(&client->server->clients, client, link);

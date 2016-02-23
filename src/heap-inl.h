@@ -124,6 +124,8 @@ HEAP_EXPORT(void heap_insert(struct heap* heap,
     path = (path << 1) | (n & 1);
 
   /* Now traverse the heap using the path we calculated in the previous step. */
+  if(!heap->min && heap->nelts)
+    return;
   parent = child = &heap->min;
   while (k > 0) {
     parent = child;
@@ -182,6 +184,8 @@ HEAP_EXPORT(void heap_remove(struct heap* heap,
 
   /* Unlink the max node. */
   child = *max;
+  if(!child)
+    return;
   *max = NULL;
 
   if (child == node) {

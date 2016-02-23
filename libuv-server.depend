@@ -1,12 +1,12 @@
 # depslib dependency file v1.0
-1456142396 source:/home/yjdwbj/libuv-server/client.c
+1456213832 source:/home/yjdwbj/libuv-server/client.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	"core.h"
 	"json-c/json.h"
 
-1456140579 /home/yjdwbj/libuv-server/core.h
+1456213129 /home/yjdwbj/libuv-server/core.h
 	<uv.h>
 	<glib.h>
 
@@ -88,12 +88,12 @@
 
 1451353459 /home/yjdwbj/libuv-server/queue.h
 
-1456142264 source:/home/yjdwbj/libuv-server/main.c
+1456208592 source:/home/yjdwbj/libuv-server/main.c
 	<stdio.h>
 	<unistd.h>
 	"core.h"
 
-1456142207 source:/home/yjdwbj/libuv-server/server.c
+1456198439 source:/home/yjdwbj/libuv-server/server.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -110,10 +110,11 @@
 	"win/internal.h"
 	"win/handle-inl.h"
 
-1451357707 /home/yjdwbj/libuv-server/src/uv-common.h
+1456211695 /home/yjdwbj/libuv-server/src/uv-common.h
 	<assert.h>
 	<stdarg.h>
 	<stddef.h>
+	"stdint-msvc2008.h"
 	<stdint.h>
 	"uv.h"
 	"tree.h"
@@ -146,19 +147,21 @@
 	"uv.h"
 	"internal.h"
 
-1451357587 source:/home/yjdwbj/libuv-server/src/inet.c
+1456211647 source:/home/yjdwbj/libuv-server/src/inet.c
 	<stdio.h>
 	<string.h>
+	"stdint-msvc2008.h"
 	<stdint.h>
 	"uv.h"
 	"uv-common.h"
 
-1451357564 source:/home/yjdwbj/libuv-server/src/threadpool.c
+1456211715 source:/home/yjdwbj/libuv-server/src/threadpool.c
 	"uv-common.h"
 	"unix/internal.h"
+	"win/req-inl.h"
 	<stdlib.h>
 
-1451357644 /home/yjdwbj/libuv-server/src/unix/internal.h
+1456213922 /home/yjdwbj/libuv-server/src/unix/internal.h
 	"uv-common.h"
 	<assert.h>
 	<stdlib.h>
@@ -193,10 +196,11 @@
 	<string.h>
 	<unistd.h>
 
-1451357618 /home/yjdwbj/libuv-server/src/unix/atomic-ops.h
+1456211240 /home/yjdwbj/libuv-server/src/unix/atomic-ops.h
 	"internal.h"
+	<atomic.h>
 
-1451357833 source:/home/yjdwbj/libuv-server/src/unix/core.c
+1456211296 source:/home/yjdwbj/libuv-server/src/unix/core.c
 	"uv.h"
 	"internal.h"
 	<stddef.h>
@@ -220,6 +224,15 @@
 	<sys/ioctl.h>
 	<sys/types.h>
 	<sys/wait.h>
+	<mach-o/dyld.h>
+	<sys/filio.h>
+	<sys/ioctl.h>
+	<sys/sysctl.h>
+	<sys/filio.h>
+	<sys/ioctl.h>
+	<sys/wait.h>
+	<sys/ioctl.h>
+	<dlfcn.h>
 
 1451294796 source:/home/yjdwbj/libuv-server/src/unix/dl.c
 	"uv.h"
@@ -229,7 +242,7 @@
 	<string.h>
 	<locale.h>
 
-1451358140 source:/home/yjdwbj/libuv-server/src/unix/fs.c
+1456211355 source:/home/yjdwbj/libuv-server/src/unix/fs.c
 	"uv.h"
 	"internal.h"
 	<errno.h>
@@ -265,7 +278,7 @@
 	"uv.h"
 	"internal.h"
 
-1456129019 source:/home/yjdwbj/libuv-server/src/unix/linux-core.c
+1456211444 source:/home/yjdwbj/libuv-server/src/unix/linux-core.c
 	"uv.h"
 	"internal.h"
 	<stdint.h>
@@ -325,10 +338,10 @@
 	<string.h>
 	<unistd.h>
 
-1451294796 /home/yjdwbj/libuv-server/src/heap-inl.h
+1456221122 /home/yjdwbj/libuv-server/src/heap-inl.h
 	<stddef.h>
 
-1451358523 source:/home/yjdwbj/libuv-server/src/unix/pipe.c
+1456211461 source:/home/yjdwbj/libuv-server/src/unix/pipe.c
 	"uv.h"
 	"internal.h"
 	<assert.h>
@@ -338,14 +351,14 @@
 	<unistd.h>
 	<stdlib.h>
 
-1451294796 source:/home/yjdwbj/libuv-server/src/unix/poll.c
+1456211471 source:/home/yjdwbj/libuv-server/src/unix/poll.c
 	"uv.h"
 	"internal.h"
 	<unistd.h>
 	<assert.h>
 	<errno.h>
 
-1451358440 source:/home/yjdwbj/libuv-server/src/unix/process.c
+1456211481 source:/home/yjdwbj/libuv-server/src/unix/process.c
 	"uv.h"
 	"internal.h"
 	<stdio.h>
@@ -382,7 +395,7 @@
 	<string.h>
 	<unistd.h>
 
-1456126727 source:/home/yjdwbj/libuv-server/src/unix/stream.c
+1456221122 source:/home/yjdwbj/libuv-server/src/unix/stream.c
 	"uv.h"
 	"internal.h"
 	<stdio.h>
@@ -405,13 +418,15 @@
 	<assert.h>
 	<errno.h>
 
-1451358372 source:/home/yjdwbj/libuv-server/src/unix/thread.c
+1456211618 source:/home/yjdwbj/libuv-server/src/unix/thread.c
 	"uv.h"
 	"internal.h"
 	<pthread.h>
 	<assert.h>
 	<errno.h>
 	<sys/time.h>
+	<sys/resource.h>
+	<limits.h>
 
 1451294796 source:/home/yjdwbj/libuv-server/src/unix/timer.c
 	"uv.h"
@@ -434,7 +449,7 @@
 	"internal.h"
 	"atomic-ops.h"
 
-1451358191 source:/home/yjdwbj/libuv-server/src/unix/udp.c
+1456211639 source:/home/yjdwbj/libuv-server/src/unix/udp.c
 	"uv.h"
 	"internal.h"
 	<assert.h>
@@ -443,7 +458,7 @@
 	<stdlib.h>
 	<unistd.h>
 
-1451361017 source:/home/yjdwbj/libuv-server/src/uv-common.c
+1456211680 source:/home/yjdwbj/libuv-server/src/uv-common.c
 	"uv.h"
 	"uv-common.h"
 	<stdio.h>
@@ -452,6 +467,7 @@
 	<stddef.h>
 	<stdlib.h>
 	<string.h>
+	<malloc.h>
 	<net/if.h>
 
 1451294796 source:/home/yjdwbj/libuv-server/src/version.c

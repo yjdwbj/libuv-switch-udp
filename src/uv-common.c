@@ -29,9 +29,11 @@
 #include <stdlib.h> /* malloc */
 #include <string.h> /* memset */
 
-
-#include <net/if.h> /* if_nametoindex */
-
+#if defined(_WIN32)
+# include <malloc.h> /* malloc */
+#else
+# include <net/if.h> /* if_nametoindex */
+#endif
 
 
 typedef struct {
@@ -196,9 +198,11 @@ int uv_ip6_addr(const char* ip, int port, struct sockaddr_in6* addr) {
 
     zone_index++; /* skip '%' */
     /* NOTE: unknown interface (id=0) is silently ignored */
-
+#ifdef _WIN32
+    addr->sin6_scope_id = atoi(zone_index);
+#else
     addr->sin6_scope_id = if_nametoindex(zone_index);
-
+#endif
   }
 
   return uv_inet_pton(AF_INET6, ip, &addr->sin6_addr);
@@ -464,9 +468,11 @@ int uv_fs_event_getpath(uv_fs_event_t* handle, char* buffer, size_t* size) {
  * contained in a nested union/struct) so this function locates it.
 */
 static unsigned int* uv__get_nbufs(uv_fs_t* req) {
-
+#ifdef _WIN32
+  return &req->fs.info.nbufs;
+#else
   return &req->nbufs;
-
+#endif
 }
 
 void uv__fs_scandir_cleanup(uv_fs_t* req) {

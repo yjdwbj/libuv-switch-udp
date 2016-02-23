@@ -49,6 +49,35 @@
 # include <sys/wait.h>
 #endif
 
+#ifdef __APPLE__
+# include <mach-o/dyld.h> /* _NSGetExecutablePath */
+# include <sys/filio.h>
+# include <sys/ioctl.h>
+#endif
+
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+# include <sys/sysctl.h>
+# include <sys/filio.h>
+# include <sys/ioctl.h>
+# include <sys/wait.h>
+# define UV__O_CLOEXEC O_CLOEXEC
+# if defined(__FreeBSD__) && __FreeBSD__ >= 10
+#  define uv__accept4 accept4
+#  define UV__SOCK_NONBLOCK SOCK_NONBLOCK
+#  define UV__SOCK_CLOEXEC  SOCK_CLOEXEC
+# endif
+# if !defined(F_DUP2FD_CLOEXEC) && defined(_F_DUP2FD_CLOEXEC)
+#  define F_DUP2FD_CLOEXEC  _F_DUP2FD_CLOEXEC
+# endif
+#endif
+
+#ifdef _AIX
+#include <sys/ioctl.h>
+#endif
+
+#if defined(__ANDROID_API__) && __ANDROID_API__ < 21
+# include <dlfcn.h>  /* for dlsym */
+#endif
 
 static int uv__run_pending(uv_loop_t* loop);
 
@@ -406,7 +435,7 @@ int uv__accept(int sockfd) {
   assert(sockfd >= 0);
 
   while (1) {
-#if defined(__linux__) || __FreeBSD__ >= 10
+#if defined(__linux__) || (defined(__FreeBSD__) && __FreeBSD__ >= 10)
     static int no_accept4;
 
     if (no_accept4)
@@ -772,7 +801,10 @@ void uv__io_init(uv__io_t* w, uv__io_cb cb, int fd) {
   w->events = 0;
   w->pevents = 0;
 
-
+#if defined(UV_HAVE_KQUEUE)
+  w->rcount = 0;
+  w->wcount = 0;
+#endif /* defined(UV_HAVE_KQUEUE) */
 }
 
 
@@ -990,7 +1022,9 @@ int uv_os_homedir(char* buffer, size_t* size) {
   size_t len;
   long initsize;
   int r;
-
+#if defined(__ANDROID_API__) && __ANDROID_API__ < 21
+  int (*getpwuid_r)(uid_t, struct passwd*, char*, size_t, struct passwd**);
+#endif
 
   if (buffer == NULL || size == NULL || *size == 0)
     return -EINVAL;
@@ -1012,7 +1046,11 @@ int uv_os_homedir(char* buffer, size_t* size) {
     return 0;
   }
 
-
+#if defined(__ANDROID_API__) && __ANDROID_API__ < 21
+  getpwuid_r = dlsym(RTLD_DEFAULT, "getpwuid_r");
+  if (getpwuid_r == NULL)
+    return -ENOSYS;
+#endif
 
   /* HOME is not set, so call getpwuid() */
   initsize = sysconf(_SC_GETPW_R_SIZE_MAX);
@@ -1061,6 +1099,57 @@ int uv_os_homedir(char* buffer, size_t* size) {
   memcpy(buffer, pw.pw_dir, len + 1);
   *size = len;
   uv__free(buf);
+
+  return 0;
+}
+
+
+int uv_os_tmpdir(char* buffer, size_t* size) {
+  const char* buf;
+  size_t len;
+
+  if (buffer == NULL || size == NULL || *size == 0)
+    return -EINVAL;
+
+#define CHECK_ENV_VAR(name)                                                   \
+  do {                                                                        \
+    buf = getenv(name);                                                       \
+    if (buf != NULL)                                                          \
+      goto return_buffer;                                                     \
+  }                                                                           \
+  while (0)
+
+  /* Check the TMPDIR, TMP, TEMP, and TEMPDIR environment variables in order */
+  CHECK_ENV_VAR("TMPDIR");
+  CHECK_ENV_VAR("TMP");
+  CHECK_ENV_VAR("TEMP");
+  CHECK_ENV_VAR("TEMPDIR");
+
+#undef CHECK_ENV_VAR
+
+  /* No temp environment variables defined */
+  #if defined(__ANDROID__)
+    buf = "/data/local/tmp";
+  #else
+    buf = "/tmp";
+  #endif
+
+return_buffer:
+  len = strlen(buf);
+
+  if (len >= *size) {
+    *size = len;
+    return -ENOBUFS;
+  }
+
+  /* The returned directory should not have a trailing slash. */
+  if (len > 1 && buf[len - 1] == '/') {
+    len--;
+  }
+
+  memcpy(buffer, buf, len + 1);
+  buffer[len] = '\0';
+  *size = len;
 
   return 0;
 }

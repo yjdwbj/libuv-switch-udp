@@ -180,6 +180,7 @@ void uv__io_stop(uv_loop_t* loop, uv__io_t* w, unsigned int events);
 void uv__io_close(uv_loop_t* loop, uv__io_t* w);
 void uv__io_feed(uv_loop_t* loop, uv__io_t* w);
 int uv__io_active(const uv__io_t* w, unsigned int events);
+int uv__io_check_fd(uv_loop_t* loop, int fd);
 void uv__io_poll(uv_loop_t* loop, int timeout); /* in milliseconds or -1 */
 
 /* async */
@@ -244,8 +245,12 @@ void uv__udp_close(uv_udp_t* handle);
 void uv__udp_finish_close(uv_udp_t* handle);
 uv_handle_type uv__handle_type(int fd);
 
+#if defined(__APPLE__)
+int uv___stream_fd(const uv_stream_t* handle);
+#define uv__stream_fd(handle) (uv___stream_fd((const uv_stream_t*) (handle)))
+#else
 #define uv__stream_fd(handle) ((handle)->io_watcher.fd)
-
+#endif /* defined(__APPLE__) */
 
 #ifdef UV__O_NONBLOCK
 # define UV__F_NONBLOCK UV__O_NONBLOCK
@@ -255,6 +260,7 @@ uv_handle_type uv__handle_type(int fd);
 
 int uv__make_socketpair(int fds[2], int flags);
 int uv__make_pipe(int fds[2], int flags);
+
 
 
 UV_UNUSED(static void uv__req_init(uv_loop_t* loop,

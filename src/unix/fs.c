@@ -45,8 +45,14 @@
 #include <utime.h>
 #include <poll.h>
 
-
+#if defined(__DragonFly__)  ||                                            \
+    defined(__FreeBSD__)    ||                                            \
+    defined(__OpenBSD__)    ||                                            \
+    defined(__NetBSD__)
+# define HAVE_PREADV 1
+#else
 # define HAVE_PREADV 0
+#endif
 
 #if defined(__linux__) || defined(__sun)
 # include <sys/sendfile.h>
@@ -255,6 +261,15 @@ static ssize_t uv__fs_read(uv_fs_t* req) {
 #endif
   ssize_t result;
 
+#if defined(_AIX)
+  struct stat buf;
+  if(fstat(req->file, &buf))
+    return -1;
+  if(S_ISDIR(buf.st_mode)) {
+    errno = EISDIR;
+    return -1;
+  }
+#endif /* defined(_AIX) */
   if (req->off < 0) {
     if (req->nbufs == 1)
       result = read(req->file, req->bufs[0].base, req->bufs[0].len);
@@ -313,9 +328,11 @@ done:
 }
 
 
-
+#if defined(__OpenBSD__) || (defined(__APPLE__) && !defined(MAC_OS_X_VERSION_10_8))
+static int uv__fs_scandir_filter(uv__dirent_t* dent) {
+#else
 static int uv__fs_scandir_filter(const uv__dirent_t* dent) {
-
+#endif
   return strcmp(dent->d_name, ".") != 0 && strcmp(dent->d_name, "..") != 0;
 }
 
@@ -639,7 +656,12 @@ static ssize_t uv__fs_write(uv_fs_t* req) {
    * data loss. We can't use a per-file descriptor lock, the descriptor may be
    * a dup().
    */
+#if defined(__APPLE__)
+  static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
+  if (pthread_mutex_lock(&lock))
+    abort();
+#endif
 
   if (req->off < 0) {
     if (req->nbufs == 1)
@@ -694,6 +716,10 @@ static ssize_t uv__fs_write(uv_fs_t* req) {
   }
 
 done:
+#if defined(__APPLE__)
+  if (pthread_mutex_unlock(&lock))
+    abort();
+#endif
 
   return r;
 }
@@ -710,10 +736,54 @@ static void uv__to_stat(struct stat* src, uv_stat_t* dst) {
   dst->st_blksize = src->st_blksize;
   dst->st_blocks = src->st_blocks;
 
-
+#if defined(__APPLE__)
+  dst->st_atim.tv_sec = src->st_atimespec.tv_sec;
+  dst->st_atim.tv_nsec = src->st_atimespec.tv_nsec;
+  dst->st_mtim.tv_sec = src->st_mtimespec.tv_sec;
+  dst->st_mtim.tv_nsec = src->st_mtimespec.tv_nsec;
+  dst->st_ctim.tv_sec = src->st_ctimespec.tv_sec;
+  dst->st_ctim.tv_nsec = src->st_ctimespec.tv_nsec;
+  dst->st_birthtim.tv_sec = src->st_birthtimespec.tv_sec;
+  dst->st_birthtim.tv_nsec = src->st_birthtimespec.tv_nsec;
+  dst->st_flags = src->st_flags;
+  dst->st_gen = src->st_gen;
+#elif defined(__ANDROID__)
+  dst->st_atim.tv_sec = src->st_atime;
+  dst->st_atim.tv_nsec = src->st_atime_nsec;
+  dst->st_mtim.tv_sec = src->st_mtime;
+  dst->st_mtim.tv_nsec = src->st_mtime_nsec;
+  dst->st_ctim.tv_sec = src->st_ctime;
+  dst->st_ctim.tv_nsec = src->st_ctime_nsec;
+  dst->st_birthtim.tv_sec = src->st_ctime;
+  dst->st_birthtim.tv_nsec = src->st_ctime_nsec;
+  dst->st_flags = 0;
   dst->st_gen = 0;
-
-
+#elif !defined(_AIX) && (       \
+    defined(_BSD_SOURCE)     || \
+    defined(_SVID_SOURCE)    || \
+    defined(_XOPEN_SOURCE)   || \
+    defined(_DEFAULT_SOURCE))
+  dst->st_atim.tv_sec = src->st_atim.tv_sec;
+  dst->st_atim.tv_nsec = src->st_atim.tv_nsec;
+  dst->st_mtim.tv_sec = src->st_mtim.tv_sec;
+  dst->st_mtim.tv_nsec = src->st_mtim.tv_nsec;
+  dst->st_ctim.tv_sec = src->st_ctim.tv_sec;
+  dst->st_ctim.tv_nsec = src->st_ctim.tv_nsec;
+# if defined(__DragonFly__)  || \
+     defined(__FreeBSD__)    || \
+     defined(__OpenBSD__)    || \
+     defined(__NetBSD__)
+  dst->st_birthtim.tv_sec = src->st_birthtim.tv_sec;
+  dst->st_birthtim.tv_nsec = src->st_birthtim.tv_nsec;
+  dst->st_flags = src->st_flags;
+  dst->st_gen = src->st_gen;
+# else
+  dst->st_birthtim.tv_sec = src->st_ctim.tv_sec;
+  dst->st_birthtim.tv_nsec = src->st_ctim.tv_nsec;
+  dst->st_flags = 0;
+  dst->st_gen = 0;
+# endif
+#else
   dst->st_atim.tv_sec = src->st_atime;
   dst->st_atim.tv_nsec = 0;
   dst->st_mtim.tv_sec = src->st_mtime;
@@ -724,6 +794,7 @@ static void uv__to_stat(struct stat* src, uv_stat_t* dst) {
   dst->st_birthtim.tv_nsec = 0;
   dst->st_flags = 0;
   dst->st_gen = 0;
+#endif
 }
 
 
@@ -787,9 +858,14 @@ static ssize_t uv__fs_buf_iter(uv_fs_t* req, uv__fs_buf_iter_processor process) 
     total += result;
   }
 
+  if (errno == EINTR && total == -1)
+    return total;
+
   if (bufs != req->bufsml)
     uv__free(bufs);
+
   req->bufs = NULL;
+  req->nbufs = 0;
 
   return total;
 }

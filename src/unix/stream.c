@@ -36,7 +36,6 @@
 #include <limits.h> /* IOV_MAX */
 
 
-
 static void uv__stream_connect(uv_stream_t*);
 static void uv__write(uv_stream_t* stream);
 static void uv__read(uv_stream_t* stream);
@@ -75,20 +74,39 @@ void uv__stream_init(uv_loop_t* loop,
       loop->emfile_fd = err;
   }
 
-
-
   uv__io_init(&stream->io_watcher, uv__stream_io, -1);
 }
 
 
 static void uv__stream_osx_interrupt_select(uv_stream_t* stream) {
+#if defined(__APPLE__)
+  /* Notify select() thread about state change */
+  uv__stream_select_t* s;
+  int r;
 
+  s = stream->select;
+  if (s == NULL)
+    return;
+
+  /* Interrupt select() loop
+   * NOTE: fake_fd and int_fd are socketpair(), thus writing to one will
+   * emit read event on other side
+   */
+  do
+    r = write(s->fake_fd, "x", 1);
+  while (r == -1 && errno == EINTR);
+
+  assert(r == 1);
+#else  /* !defined(__APPLE__) */
+  /* No-op on any other platform */
+#endif  /* !defined(__APPLE__) */
 }
 
 
 
 
 int uv__stream_open(uv_stream_t* stream, int fd, int flags) {
+
 
   if (!(stream->io_watcher.fd == -1 || stream->io_watcher.fd == fd))
     return -EBUSY;
@@ -104,7 +122,6 @@ int uv__stream_open(uv_stream_t* stream, int fd, int flags) {
     if ((stream->flags & UV_TCP_KEEPALIVE) && uv__tcp_keepalive(fd, 1, 60))
       return -errno;
   }
-
 
   stream->io_watcher.fd = fd;
 
@@ -191,9 +208,6 @@ static int uv__emfile_trick(uv_loop_t* loop, int accept_fd) {
 
 
 
-# define UV_DEC_BACKLOG(w) /* no-op */
-
-
 
 void uv__server_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
   uv_stream_t* stream;
@@ -201,8 +215,9 @@ void uv__server_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
 
   stream = container_of(w, uv_stream_t, io_watcher);
   assert(events == UV__POLLIN);
-  assert(stream->accepted_fd == -1);
+ // assert(stream->accepted_fd == -1);
   assert(!(stream->flags & UV_CLOSING));
+
 
   uv__io_start(stream->loop, &stream->io_watcher, UV__POLLIN);
 
@@ -231,7 +246,7 @@ void uv__server_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
       continue;
     }
 
-    UV_DEC_BACKLOG(w)
+   // UV_DEC_BACKLOG(w)
     stream->accepted_fd = err;
     stream->connection_cb(stream, 0);
 
@@ -250,7 +265,7 @@ void uv__server_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
 }
 
 
-#undef UV_DEC_BACKLOG
+//#undef UV_DEC_BACKLOG
 
 
 int uv_accept(uv_stream_t* server, uv_stream_t* client) {
@@ -494,8 +509,8 @@ start:
     do {
       n = sendmsg(uv__stream_fd(stream), &msg, 0);
     }
-    while (n == -1 && errno == EINTR);
 
+    while (n == -1 && errno == EINTR);
   } else {
     do {
       if (iovcnt == 1) {
@@ -504,6 +519,7 @@ start:
         n = writev(uv__stream_fd(stream), iov, iovcnt);
       }
     }
+
     while (n == -1 && errno == EINTR);
 
   }
@@ -749,6 +765,11 @@ static int uv__stream_recv_cmsg(uv_stream_t* stream, struct msghdr* msg) {
 }
 
 
+#ifdef __clang__
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wgnu-folding-constant"
+#endif
+
 static void uv__read(uv_stream_t* stream) {
   uv_buf_t buf;
   ssize_t nread;
@@ -775,8 +796,7 @@ static void uv__read(uv_stream_t* stream) {
       && (count-- > 0)) {
     assert(stream->alloc_cb != NULL);
 
-    //stream->alloc_cb((uv_handle_t*)stream, 64 * 1024, &buf);
-    stream->alloc_cb((uv_handle_t*)stream, 64 * 1024,&buf);
+    stream->alloc_cb((uv_handle_t*)stream, 64 * 1024, &buf);
     if (buf.len == 0) {
       /* User indicates it can't or won't handle the read. */
       stream->read_cb(stream, UV_ENOBUFS, &buf);
@@ -814,9 +834,13 @@ static void uv__read(uv_stream_t* stream) {
         /* Wait for the next one. */
         if (stream->flags & UV_STREAM_READING) {
           uv__io_start(stream->loop, &stream->io_watcher, UV__POLLIN);
-        //  uv__stream_osx_interrupt_select(stream);
+          uv__stream_osx_interrupt_select(stream);
         }
-        stream->read_cb(stream, 0, &buf);
+        if(stream->read_cb)
+        {
+            stream->read_cb(stream, 0, &buf);
+        }
+
       } else {
         /* Error. User should call uv_close(). */
         stream->read_cb(stream, -errno, &buf);
@@ -825,7 +849,7 @@ static void uv__read(uv_stream_t* stream) {
           uv__io_stop(stream->loop, &stream->io_watcher, UV__POLLIN);
           if (!uv__io_active(&stream->io_watcher, UV__POLLOUT))
             uv__handle_stop(stream);
-       //   uv__stream_osx_interrupt_select(stream);
+          uv__stream_osx_interrupt_select(stream);
         }
       }
       return;
@@ -855,6 +879,10 @@ static void uv__read(uv_stream_t* stream) {
 }
 
 
+#ifdef __clang__
+# pragma clang diagnostic pop
+#endif
+
 #undef UV__CMSG_FD_COUNT
 #undef UV__CMSG_FD_SIZE
 
@@ -881,7 +909,7 @@ int uv_shutdown(uv_shutdown_t* req, uv_stream_t* stream, uv_shutdown_cb cb) {
   stream->flags |= UV_STREAM_SHUTTING;
 
   uv__io_start(stream->loop, &stream->io_watcher, UV__POLLOUT);
- // uv__stream_osx_interrupt_select(stream);
+  uv__stream_osx_interrupt_select(stream);
 
   return 0;
 }
@@ -1172,7 +1200,7 @@ int uv_read_start(uv_stream_t* stream,
 
   uv__io_start(stream->loop, &stream->io_watcher, UV__POLLIN);
   uv__handle_start(stream);
- // uv__stream_osx_interrupt_select(stream);
+  uv__stream_osx_interrupt_select(stream);
 
   return 0;
 }
@@ -1204,10 +1232,27 @@ int uv_is_writable(const uv_stream_t* stream) {
 }
 
 
+#if defined(__APPLE__)
+int uv___stream_fd(const uv_stream_t* handle) {
+  const uv__stream_select_t* s;
+
+  assert(handle->type == UV_TCP ||
+         handle->type == UV_TTY ||
+         handle->type == UV_NAMED_PIPE);
+
+  s = handle->select;
+  if (s != NULL)
+    return s->fd;
+
+  return handle->io_watcher.fd;
+}
+#endif /* defined(__APPLE__) */
+
 
 void uv__stream_close(uv_stream_t* handle) {
   unsigned int i;
   uv__stream_queued_fds_t* queued_fds;
+
 
 
   uv__io_close(handle->loop, &handle->io_watcher);

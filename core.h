@@ -58,12 +58,7 @@ static char SUFIX[]={0xd,0xa,0xd,0xa};
 
 static char msg_ok[] = {0x0,0xf,0x7b,0x22,0x6d,0x73,0x67,0x22,0x3a,0x20,0x22,0x6f,0x6b,0x22,0x7d,0xd,0xa,0xd,0xa};
 
-struct child_worker{
 
-    uv_process_t req;
-    uv_process_options_t options;
-    uv_pipe_t pipe;
-} *workers;
 
 struct server;
 
@@ -72,20 +67,10 @@ struct client
 {
 	//uv_loop_t* loop;
 	struct server* server;
-
 	uv_tcp_t   socket;
-
-
-	char* command;
-	//int   pace;
-
-	char  buffer[256];
+	char  buffer[8192];
 	char  *uuid;  /*uuid 做为一个用户名*/
 	char  *pwd;      /*uuid 访问密码*/
-
-
-	//int   bufferLength;
-	//int   dataRead;
 };
 
 typedef enum  {
@@ -125,6 +110,9 @@ typedef struct __ThreadArg_t
     struct server* server_;
     int sync_flag_;
 }T_THREADARG;
+
+
+
 
 int  server_initialize(uv_loop_t* loop, struct server* server);
 void server_destroy(struct server* server);

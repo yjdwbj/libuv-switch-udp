@@ -21,8 +21,21 @@
 
 #include "uv-common.h"
 
-#include "unix/internal.h"
-
+#if !defined(_WIN32)
+# include "unix/internal.h"
+#else
+# include "win/req-inl.h"
+/* TODO(saghul): unify internal req functions */
+static void uv__req_init(uv_loop_t* loop,
+                         uv_req_t* req,
+                         uv_req_type type) {
+  uv_req_init(loop, req);
+  req->type = type;
+  uv__req_register(loop, req);
+}
+# define uv__req_init(loop, req, type) \
+    uv__req_init((loop), (uv_req_t*)(req), (type))
+#endif
 
 #include <stdlib.h>
 
@@ -100,7 +113,7 @@ static void post(QUEUE* q) {
 }
 
 
-
+#ifndef _WIN32
 UV_DESTRUCTOR(static void cleanup(void)) {
   unsigned int i;
 
@@ -123,7 +136,7 @@ UV_DESTRUCTOR(static void cleanup(void)) {
   nthreads = 0;
   initialized = 0;
 }
-
+#endif
 
 
 static void init_once(void) {

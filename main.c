@@ -32,6 +32,10 @@
 
 
 
+ GHashTable *app_table;
+ GHashTable *dev_table;
+
+
  static struct server dev_server;
  static  struct server app_server;
 
@@ -51,8 +55,8 @@ static void srv_thread_entry(void *arg)
 {
     T_THREADARG* t = (T_THREADARG*)arg;
     uv_run(t->loop_, UV_RUN_DEFAULT);
-       g_hash_table_remove_all(t->server_->c_gtable);
-    g_hash_table_destroy(t->server_->c_gtable);
+   // g_hash_table_remove_all(t->server_->c_gtable);
+   // g_hash_table_destroy(t->server_->c_gtable);
     server_destroy(t->server_);
     uv_stop(t->loop_);
     uv_loop_delete(t->loop_);
@@ -63,10 +67,8 @@ static void srv_thread_entry(void *arg)
 int main(int argc, char** argv)
 {
 
-
 	uv_loop_t* dev_loop;
 	uv_loop_t* app_loop;
-
 
 	dev_loop = uv_default_loop();
 	app_loop = uv_default_loop();
@@ -83,8 +85,10 @@ int main(int argc, char** argv)
 	server_initialize(app_loop, &app_server);
 	dev_server.stype = DEV_SRV;
 	app_server.stype = APP_SRV;
-    dev_server.c_gtable = g_hash_table_new(g_str_hash,g_str_equal);
-    app_server.c_gtable = g_hash_table_new(g_int_hash,g_int_equal);
+   // dev_server.c_gtable = g_hash_table_new(g_str_hash,g_str_equal);
+   // app_server.c_gtable = g_hash_table_new(g_int_hash,g_int_equal);
+    app_table = g_hash_table_new(g_int_hash,g_int_equal);
+    dev_table = g_hash_table_new(g_str_hash,g_str_equal);
 
 	dev_server.part_server = &app_server;
 	server_start(&dev_server,&dev_addr);
@@ -119,49 +123,6 @@ int main(int argc, char** argv)
     }
     uv_thread_join(&dev_th);
     uv_thread_join(&app_th);
-
-/*
-    g_hash_table_remove_all(dev_server.c_gtable);
-    g_hash_table_destroy(dev_server.c_gtable);
-    g_hash_table_remove_all(app_server.c_gtable);
-    g_hash_table_destroy(app_server.c_gtable);
-
-*/
-
-
-
-
-    /*
-	pid_t devPID;
-	pid_t appPID;
-	devPID = fork();
-	if(devPID >= 0 )
-    {
-        fprintf(stdout, "start dev camera server");
-
-        uv_run(dev_loop, UV_RUN_DEFAULT);
-        server_destroy(&dev_server);
-    }
-    else{
-        printf("dev loop fork failed");
-        server_destroy(&dev_server);
-    }
-
-    appPID = fork();
-    if(appPID >=0 )
-    {
-        fprintf(stdout, "start app server");
-
-        uv_run(app_loop, UV_RUN_DEFAULT);
-        server_destroy(&app_server);
-    }else{
-        printf("app loop fork failed");
-        server_destroy(&app_server);
-
-    }
-    */
-
-
 
 	return 0;
 }

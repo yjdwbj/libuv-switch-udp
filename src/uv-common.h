@@ -31,17 +31,19 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-
+#if defined(_MSC_VER) && _MSC_VER < 1600
+# include "stdint-msvc2008.h"
+#else
 # include <stdint.h>
-
+#endif
 
 #include "uv.h"
 #include "tree.h"
 #include "queue.h"
 
-
+#if !defined(snprintf) && defined(_MSC_VER) && _MSC_VER < 1900
 extern int snprintf(char*, size_t, const char*, ...);
-
+#endif
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
@@ -51,13 +53,19 @@ extern int snprintf(char*, size_t, const char*, ...);
 #define STATIC_ASSERT(expr)                                                   \
   void uv__static_assert(int static_assert_failed[1 - 2 * !(expr)])
 
-
+#ifndef _WIN32
 enum {
   UV__HANDLE_INTERNAL = 0x8000,
   UV__HANDLE_ACTIVE   = 0x4000,
   UV__HANDLE_REF      = 0x2000,
   UV__HANDLE_CLOSING  = 0 /* no-op on unix */
 };
+#else
+# define UV__HANDLE_INTERNAL  0x80
+# define UV__HANDLE_ACTIVE    0x40
+# define UV__HANDLE_REF       0x20
+# define UV__HANDLE_CLOSING   0x01
+#endif
 
 int uv__loop_configure(uv_loop_t* loop, uv_loop_option option, va_list ap);
 

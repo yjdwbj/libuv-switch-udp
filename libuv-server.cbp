@@ -13,6 +13,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-O0" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -56,7 +57,9 @@
 		<Unit filename="include/pthread-fixes.h" />
 		<Unit filename="include/tree.h" />
 		<Unit filename="include/uv-errno.h" />
+		<Unit filename="include/uv-linux.h" />
 		<Unit filename="include/uv-threadpool.h" />
+		<Unit filename="include/uv-unix.h" />
 		<Unit filename="include/uv-version.h" />
 		<Unit filename="include/uv.h" />
 		<Unit filename="json-c/arraylist.c">

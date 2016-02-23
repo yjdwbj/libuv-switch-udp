@@ -386,6 +386,10 @@ static void uv__process_child_init(const uv_process_options_t* options,
 int uv_spawn(uv_loop_t* loop,
              uv_process_t* process,
              const uv_process_options_t* options) {
+#if defined(__APPLE__) && (TARGET_OS_TV || TARGET_OS_WATCH)
+  /* fork is marked __WATCHOS_PROHIBITED __TVOS_PROHIBITED. */
+  return -ENOSYS;
+#else
   int signal_pipe[2] = { -1, -1 };
   int (*pipes)[2];
   int stdio_count;
@@ -534,7 +538,7 @@ error:
   }
 
   return err;
-
+#endif
 }
 
 

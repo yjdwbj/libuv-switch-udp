@@ -32,143 +32,18 @@
 #include "core.h"
 
 #include "json-c/json.h"
+extern GHashTable *app_table;
+extern GHashTable *dev_table;
 
-/*printing the value corresponding to boolean, double, integer and strings*/
-void print_json_value(json_object *jobj)
-{
-    enum json_type type;
-    printf("type: ",type);
-    type = json_object_get_type(jobj); /*Getting the type of the json object*/
-    switch (type)
-    {
-    case json_type_boolean:
-        printf("json_type_booleann");
-        printf("value: %sn", json_object_get_boolean(jobj)? "true": "false");
-        break;
-    case json_type_double:
-        printf("json_type_doublen");
-        printf("          value: %lfn", json_object_get_double(jobj));
-        break;
-    case json_type_int:
-        printf("json_type_intn");
-        printf("          value: %dn", json_object_get_int(jobj));
-        break;
-    case json_type_string:
-        printf("json_type_stringn");
-        printf("          value: %sn", json_object_get_string(jobj));
-        break;
-    }
 
-}
-
-void json_parse_array( json_object *jobj, char *key)
-{
-    void json_parse(json_object * jobj); /*Forward Declaration*/
-    enum json_type type;
-
-    json_object *jarray = jobj; /*Simply get the array*/
-    if(key)
-    {
-        jarray = json_object_object_get(jobj, key); /*Getting the array if it is a key value pair*/
-    }
-
-    int arraylen = json_object_array_length(jarray); /*Getting the length of the array*/
-    printf("Array Length: %dn",arraylen);
-    int i;
-    json_object * jvalue;
-
-    for (i=0; i< arraylen; i++)
-    {
-        jvalue = json_object_array_get_idx(jarray, i); /*Getting the array element at position i*/
-        type = json_object_get_type(jvalue);
-        if (type == json_type_array)
-        {
-            json_parse_array(jvalue, NULL);
-        }
-        else if (type != json_type_object)
-        {
-            printf("value[%d]: ",i);
-            print_json_value(jvalue);
-        }
-        else
-        {
-            json_parse(jvalue);
-        }
-    }
-}
-
-/*Parsing the json object*/
-void json_parse(json_object * jobj)
-{
-    enum json_type type;
-    json_object_object_foreach(jobj, key, val)   /*Passing through every array element*/
-    {
-        printf("type: ",type);
-        type = json_object_get_type(val);
-        switch (type)
-        {
-        case json_type_boolean:
-        case json_type_double:
-        case json_type_int:
-        case json_type_string:
-            print_json_value(val);
-            break;
-        case json_type_object:
-            printf("json_type_objectn");
-            jobj = json_object_object_get(jobj, key);
-            json_parse(jobj);
-            break;
-        case json_type_array:
-            printf("type: json_type_array, ");
-            json_parse_array(jobj, key);
-            break;
-        }
-    }
-}
-
-static void parser_to_json(char *data)
-{
-    /*
-        JsonParser *parser;
-        JsonNode *root;
-        GError *error;
-        g_type_init();
-        parser = json_parser_new();
-        error = NULL;
-
-        json_parser_load_from_data(parser,data,-1,&error);
-        if(error){
-            fprintf(stderr,"%s",error->message);
-            g_error_free(error);
-            g_object_unref(parser);
-
-        }
-        root = json_parser_get_root(parser);
-        g_object_unref(parser);
-        */
-    /*分析jso段*/
-    struct json_object * jobj = json_tokener_parse(&data[2]);
-    printf("json obj.to_string() = %s\n",
-           json_object_to_json_string(jobj));
-
-    struct json_object* uobj = json_object_object_get(jobj,"uuid");
-    char *uuid = json_object_get_string(uobj);
-    printf("uuid is %s\n",uuid);
-
-    struct json_object* cmdobj = json_object_object_get(jobj,"cmd");
-    char *cmd = json_object_get_string(cmdobj);
-
-    //json_object_put(jobj);
-
-    //json_parse(jobj);
-
-}
 
 int client_initialize(struct client* client, struct server* server)
 {
     memset(client, 0, sizeof(*client));
 
     client->server = server;
+    client->uuid = NULL;
+    client->pwd = NULL;
 
     uv_tcp_init(server->loop, &client->socket);
     client->socket.data = client;
@@ -180,8 +55,20 @@ void client_destroy(struct client* client)
 {
 
     if (client == NULL) return;
+    if(client->uuid)
+    {
+        free(client->uuid);
+    }
+    if(client->pwd)
+    {
+        free(client->pwd);
+    }
+    client->server = NULL;
+    client->socket.data = NULL;
 
-    if (client->command != NULL) free(client->command);
+    free(client);
+
+    //if (client->command != NULL) free(client->command);
 }
 
 static void _on_alloc_buffer(uv_handle_t* handle, size_t suggested_size,uv_buf_t* buf)
@@ -191,10 +78,10 @@ static void _on_alloc_buffer(uv_handle_t* handle, size_t suggested_size,uv_buf_t
     client = handle->data;
 
     memset(client->buffer, 0, sizeof(client->buffer));
-    uv_buf_t t = { NULL, 0 };
-    t =  uv_buf_init(client->buffer, sizeof(client->buffer));
-    buf->base = t.base;
-    buf->len = t.len;
+   // uv_buf_t t = { NULL, 0 };
+  //  t =  uv_buf_init(client->buffer, sizeof(client->buffer));
+    buf->base = client->buffer;
+    buf->len = sizeof(client->buffer);
 }
 
 static void _on_disconnect(uv_handle_t* handle)
@@ -202,26 +89,15 @@ static void _on_disconnect(uv_handle_t* handle)
     // TODO: This is a dummy example
 
     struct client* client = handle->data;
-
     client_destroy(client);
-    free(client);
+
 }
 
-static const char* get_json_object_value(struct json_object* obj,char *key)
+void print_key_value(gpointer key,gpointer value,gpointer user_data)
 {
-    struct json_object* pobj = json_object_object_get(obj,key);
-    return json_object_get_string(pobj);
+    printf("hash item \"%s\"---->%08x\n",key,value);
 }
 
-static char *make_packets(char *json )
-{
-    int n = strlen(json);
-
-    char *data = (char *)malloc(n+6);
-    memcpy(&data[2],json,n);
-    strncpy(data,(char*)SUFIX,4);
-    return data;
-}
 
 
 static void dev_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
@@ -241,25 +117,27 @@ static void dev_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
         client_disconnect(client, _on_disconnect);
         return;
     }
-    fprintf(stderr, "DEV Client read: %s\n", buf->base);
+  //  fprintf(stderr, "DEV Client read: %s\t,strlen %d\n", &buf->base[2],
+   //         strlen(&buf->base[2]));
     //parser_to_json(buf->base);
 
     /*分析jso段*/
     struct json_object * jobj = json_tokener_parse(&(buf->base[2]));
     if(!jobj)
     {
+        printf("dev read wrong data!\n");
         server_detach(client->server, client);
         client_disconnect(client, _on_disconnect);
         return;
 
     }
-   // printf("dev read json obj.to_string() = %s\n",
+    // printf("dev read json obj.to_string() = %s\n",
     //       json_object_to_json_string(jobj));
 
     struct json_object* obj = json_object_object_get(jobj,CMD);
     const char *cmd = json_object_get_string(obj);
-    int clen = strlen(cmd);
-    json_object_put(obj);
+
+//    json_object_put(obj);
     uv_write_t wr;
 
     uv_buf_t sbuf = { NULL, 0 };
@@ -276,58 +154,79 @@ static void dev_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
     }
 
    // printf("dev get command %s\n",cmd);
-    if (!strncmp(cmd,LOGIN,clen))
+    if (!strcmp(cmd,LOGIN))
     {
         /*登录命令*/
         //  struct json_object* uobj = json_object_object_get(jobj,"uuid");
-        client->uuid = json_object_get_string(json_object_object_get(jobj,UUID));
+
+        const char *tuuid = json_object_get_string(json_object_object_get(jobj,UUID));
+        int tlen = strlen(tuuid);
+        client->uuid = (char*)malloc(tlen+1);
+
+        memcpy(client->uuid,tuuid,tlen);
+        client->uuid[tlen]='\0';
         // struct json_object* pobj = json_object_object_get(jobj,"pwd");
-        client->pwd =json_object_get_string(json_object_object_get(jobj,PWD));
+        const char *tpwd =json_object_get_string(json_object_object_get(jobj,PWD));
+        tlen=strlen(tpwd);
+        client->pwd = malloc(tlen+1);
+        client->pwd[tlen] = '\0';
+        memcpy(client->pwd,tpwd,tlen);
         /* 添加本客户端到链表里*/
         //g_hash_table_insert(server->c_gtable,stream->u.fd ,(gpointer)client);
 
-        printf(" srv type %d\b",client->server->stype);
-        g_hash_table_insert(client->server->c_gtable,
+      //  printf(" srv type %d\n",client->server->stype);
+        //g_hash_table_insert(client->server->c_gtable,
+        //                    (gpointer)client->uuid,(gpointer)client);
+        g_hash_table_insert(dev_table,
                             (gpointer)client->uuid,(gpointer)client);
+        //  printf("dev hash_table size %d\n",g_hash_table_size(dev_table));
+        // g_hash_table_foreach(dev_table,print_key_value,NULL);
 
         sbuf = uv_buf_init(&msg_ok,sizeof(msg_ok));
-        int r = uv_write(&wr,stream,&sbuf,1,NULL);
+        uv_write(&wr,stream,&sbuf,1,NULL);
     }
-    else if(!strncmp(cmd,KEEP,clen))
+    else if(!strcmp(cmd,KEEP))
     {
         /*心跳包*/
-        int r = uv_write(&wr,stream,buf,1,NULL);
+        uv_write(&wr,stream,buf,1,NULL);
     }
-    else if(!strncmp(cmd,CONN,clen))
+    else if(!strcmp(cmd,CONN))
     {
 
         /*连接请求*/
 
         gpointer fd = json_object_get_int(json_object_object_get(jobj,AID));
-        struct client *appclient =
-            g_hash_table_lookup(client->server->part_server->c_gtable,&fd);
+       // printf("get aid is %d\n",fd);
+        struct client *appclient =g_hash_table_lookup(app_table,&fd);
 
         if (appclient)
         {
-            printf(" I got some one connect request ");
+          //  printf(" I got some one connect request ");
             struct json_object* connjson =   json_object_new_object();
             json_object_object_add(connjson,ADDR,json_object_object_get(jobj,ADDR));
             json_object_object_add(connjson,UUID,json_object_object_get(jobj,UUID));
 
             const char *jdata = json_object_to_json_string(connjson);
             int connlen = strlen(jdata)+2;
-            char *connbuf = (char *)malloc(connlen+4);
+            char *connbuf = (char *)malloc(connlen+4+1);
             connbuf[0] = connlen & 0xff00;
             connbuf[1] = connlen & 0xff;
             memcpy(&connbuf[2],jdata,connlen-2);
             memcpy(&connbuf[connlen],(char*)SUFIX,4);
-            uv_write_t* wr;
+            connbuf[connlen+4] = '\0';
+
 
             sbuf = uv_buf_init(connbuf,connlen+4);
-            //wr = (uv_write_t*)malloc(sizeof(*wr));
-            int r = uv_write(&wr,(uv_stream_t*)&appclient->socket,&sbuf,1,NULL);
+
+            uv_write(&wr,(uv_stream_t*)&appclient->socket,&sbuf,1,NULL);
             json_object_put(connjson);
             free(connbuf);
+            printf("app table size %d\n",g_hash_table_size(app_table));
+            server_detach(appclient->server, appclient);
+            client_disconnect(appclient, _on_disconnect);
+
+            //g_hash_table_remove(app_table,&fd);
+
         }
 
     }
@@ -337,10 +236,7 @@ static void dev_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
         sbuf = uv_buf_init((char*)unkown_cmd,sizeof(unkown_cmd));
         int r = uv_write(&wr,stream,&sbuf,1,NULL);
     }
-   // json_object_put(jobj); // 清理内存
-
-
-
+    json_object_put(jobj); // 清理内存
 }
 
 
@@ -356,22 +252,26 @@ static void app_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
     }
     if (nread < 0 )
     {
-       // fprintf(stderr, "APP The client disconnected,recv %s \t, str len %d\n",
-       //         buf->base,strlen(buf->base));
+        // fprintf(stderr, "APP The client disconnected,recv %s \t, str len %d\n",
+        //         buf->base,strlen(buf->base));
         server_detach(client->server, client);
         client_disconnect(client, _on_disconnect);
         return;
     }
 
     uv_buf_t sbuf = { NULL, 0 };
-    fprintf(stderr, "APP Client read: %s\t ,len %d\n", buf->base,strlen(buf->base));
+  //  fprintf(stderr, "APP Client read: %s\t ,len %d\n", &buf->base[2],
+   //         strlen(&buf->base[2]));
     //parser_to_json(buf->base);
     /*分析jso段*/
     struct json_object * jobj = json_tokener_parse(&(buf->base[2]));
-    if (jobj)
+    if (!jobj)
     {
-            printf("app recv json obj.to_string() = %s\n",
-           json_object_to_json_string(jobj));
+        //  printf("app recv json obj.to_string() = %s\n",
+        server_detach(client->server, client);
+        client_disconnect(client, _on_disconnect);
+       // printf(" app recv wrong format data\n");
+        return;
     }
     uv_write_t wr;
 
@@ -380,14 +280,14 @@ static void app_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
     char *cmd = json_object_get_string(cmdobj);
     if (!cmd)
     {
-        printf("recv unkown cmd, %s\n",buf->base);
+      //  printf("recv unkown cmd, %s\n",buf->base);
 
 
         sbuf = uv_buf_init((char*)unkown_cmd,sizeof(unkown_cmd));
         int r = uv_write(&wr,stream,&sbuf,1,NULL);
         server_detach(client->server, client);
-         client_disconnect(client, _on_disconnect);
-         /*未定义的key,应该断开本连接 */
+        client_disconnect(client, _on_disconnect);
+        /*未定义的key,应该断开本连接 */
         return ;
     }
     if (!strcmp(cmd,CONN))
@@ -399,16 +299,22 @@ static void app_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
         // struct json_object* pobj = json_object_object_get(jobj,"pwd");
         struct json_object* pwdjson =  json_object_object_get(jobj,PWD);
         const char *pvalue = json_object_get_string(pwdjson);
-        struct client* devclient = g_hash_table_lookup(client->server->part_server->c_gtable,
+        /*struct client* devclient = g_hash_table_lookup(client->server->part_server->c_gtable,
                                    (gpointer)uvalue);
-      //  printf("auth pwd %s\t , db pwd %s\n",pvalue,devclient->pwd);
+                                   */
+
+        struct client* devclient = g_hash_table_lookup(dev_table,
+                                   (gpointer)uvalue);
+      //  g_hash_table_foreach(dev_table,print_key_value,NULL);
+
         if ((devclient != NULL) && !strcmp(pvalue,
                                            devclient->pwd))
         {
+          //  printf("app login ok\n");
             /*app 端认证成功*/
             /* 添加本客户端到链表里*/
             //g_hash_table_insert(server->c_gtable,stream->u.fd ,(gpointer)client);
-            g_hash_table_insert(client->server->c_gtable,
+            g_hash_table_insert(app_table,
                                 &client->socket.io_watcher.fd ,(gpointer)client);
             /* 发送请求到dev 客户端*/
 
@@ -424,21 +330,25 @@ static void app_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
             //printf("json string data %s\n",json_object_to_json_string(connjson));
             const char *jdata = json_object_to_json_string(connjson);
             int connlen = strlen(jdata)+2;
-            char *connbuf = (char *)malloc(connlen+4);
+            char *connbuf = (char *)malloc(connlen+4+1);
             connbuf[0] = connlen & 0xff00;
             connbuf[1] = connlen & 0xff;
             memcpy(&connbuf[2],jdata,connlen-2);
             memcpy(&connbuf[connlen],(char*)SUFIX,4);
+            connbuf[connlen+4]='\0';
 
             sbuf = uv_buf_init(connbuf,connlen+4);
-
-            int r = uv_write(&wr,(uv_stream_t*)&devclient->socket,&sbuf,1,NULL);
+            uv_write(&wr,(uv_stream_t*)&devclient->socket,&sbuf,1,NULL);
             //  printf("conn data is %s\n",sbuf.base);
-            printf("app auth ok send msg to dev\n");
+          //  printf("app auth ok send msg to dev\n");
             free(connbuf);
+            json_object_put(connjson);
+
         }
 
-    }else{
+    }
+    else
+    {
         /*未知命令*/
 
 
