@@ -429,7 +429,7 @@ void json_object_object_add_ex(struct json_object* jso,
 	json_object *existing_value = NULL;
 	struct lh_entry *existing_entry;
 	const unsigned long hash = lh_get_hash(jso->o.c_object, (void*)key);
-	existing_entry = (opts & JSON_C_OBJECT_ADD_KEY_IS_NEW) ? NULL : 
+	existing_entry = (opts & JSON_C_OBJECT_ADD_KEY_IS_NEW) ? NULL :
 			      lh_table_lookup_entry_w_hash(jso->o.c_object, (void*)key, hash);
 	if (!existing_entry)
 	{

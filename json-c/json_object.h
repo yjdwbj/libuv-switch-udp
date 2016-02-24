@@ -286,6 +286,7 @@ json_object_to_json_string_fn json_object_userdata_to_json_string;
  *
  * @returns a json_object of type json_type_object
  */
+
 extern struct json_object* json_object_new_object(void);
 
 /** Get the hashtable of a json_object of type json_type_object
@@ -331,7 +332,7 @@ extern int json_object_object_add(struct json_object* obj, const char *key,
  * @param obj the json_object instance
  * @param key the object field name (a private copy will be duplicated)
  * @param val a json_object or NULL member to associate with the given field
- * @param opts process-modifying options. To specify multiple options, use 
+ * @param opts process-modifying options. To specify multiple options, use
  *             arithmetic or (OPT1|OPT2)
  */
 extern void json_object_object_add_ex(struct json_object* obj, const char *key,

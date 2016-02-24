@@ -29,6 +29,7 @@
 #include <unistd.h>
 
 #include "core.h"
+#include <pthread.h>
 
 
 
@@ -54,25 +55,20 @@ int get_cpu_count()
 static void srv_thread_entry(void *arg)
 {
     T_THREADARG* t = (T_THREADARG*)arg;
-    uv_run(t->loop_, UV_RUN_DEFAULT);
-   // g_hash_table_remove_all(t->server_->c_gtable);
-   // g_hash_table_destroy(t->server_->c_gtable);
+    uv_loop_t *loop = t->server_->loop;
+    uv_run(loop, UV_RUN_DEFAULT);
+    uv_stop(loop);
+    uv_loop_delete(loop);
     server_destroy(t->server_);
-    uv_stop(t->loop_);
-    uv_loop_delete(t->loop_);
-    free(t->loop_);
+    free(loop);
 }
 
 
 int main(int argc, char** argv)
 {
 
-	uv_loop_t* dev_loop;
-	uv_loop_t* app_loop;
-
-	dev_loop = uv_default_loop();
-	app_loop = uv_default_loop();
-
+	uv_loop_t* dev_loop = uv_default_loop();
+	uv_loop_t* app_loop = uv_default_loop();
 
     struct sockaddr_in dev_addr;
 	uv_ip4_addr("0.0.0.0", 5560,&dev_addr);
@@ -92,14 +88,29 @@ int main(int argc, char** argv)
 
 	dev_server.part_server = &app_server;
 	server_start(&dev_server,&dev_addr);
+	//uv_run(dev_loop,UV_RUN_DEFAULT);
 
 
 	app_server.part_server = &dev_server;
 	server_start(&app_server,&app_addr);
 
-
     T_THREADARG app_arg;
-    app_arg.loop_ = app_loop;
+    app_arg.server_ = &app_server;
+    app_arg.sync_flag_ = 1;
+    pthread_t app_th;
+    pthread_create(&app_th,NULL,srv_thread_entry,&app_arg);
+
+    pthread_t dev_th;
+    T_THREADARG dev_arg;
+    dev_arg.server_ = &dev_server;
+    dev_arg.sync_flag_ = 1;
+    pthread_create(&dev_th,NULL,srv_thread_entry,&app_arg);
+
+    pthread_join(app_th,NULL);
+    pthread_join(dev_th,NULL);
+
+/*
+    T_THREADARG app_arg;
     app_arg.server_ = &app_server;
     app_arg.sync_flag_ = 1;
     uv_thread_t app_th;
@@ -112,7 +123,6 @@ int main(int argc, char** argv)
 
 
     T_THREADARG dev_arg;
-    dev_arg.loop_ = dev_loop;
     dev_arg.server_ = &dev_server;
     dev_arg.sync_flag_ = 1;
     uv_thread_t dev_th;
@@ -123,6 +133,6 @@ int main(int argc, char** argv)
     }
     uv_thread_join(&dev_th);
     uv_thread_join(&app_th);
-
+*/
 	return 0;
 }

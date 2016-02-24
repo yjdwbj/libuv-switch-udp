@@ -215,7 +215,9 @@ void uv__server_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
 
   stream = container_of(w, uv_stream_t, io_watcher);
   assert(events == UV__POLLIN);
- // assert(stream->accepted_fd == -1);
+  if(stream->accepted_fd !=-1)
+    return;
+  assert(stream->accepted_fd == -1);
   assert(!(stream->flags & UV_CLOSING));
 
 
@@ -225,6 +227,8 @@ void uv__server_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
    * in the loop so check it on each iteration.
    */
   while (uv__stream_fd(stream) != -1) {
+    if(stream->accepted_fd !=-1)
+    return;
     assert(stream->accepted_fd == -1);
 
 
@@ -440,11 +444,11 @@ static int uv__handle_fd(uv_handle_t* handle) {
 }
 
 static void uv__write(uv_stream_t* stream) {
-  struct iovec* iov;
-  QUEUE* q;
-  uv_write_t* req;
-  int iovmax;
-  int iovcnt;
+  struct iovec* iov = NULL;
+  QUEUE* q = NULL;
+  uv_write_t* req = NULL;
+  int iovmax = NULL;
+  int iovcnt = NULL;
   ssize_t n;
 
 start:
@@ -602,8 +606,7 @@ start:
 
 static void uv__write_callbacks(uv_stream_t* stream) {
   uv_write_t* req;
-  QUEUE* q;
-
+  QUEUE* q ;
   while (!QUEUE_EMPTY(&stream->write_completed_queue)) {
     /* Pop a req off write_completed_queue. */
     q = QUEUE_HEAD(&stream->write_completed_queue);
@@ -838,7 +841,7 @@ static void uv__read(uv_stream_t* stream) {
         }
         if(stream->read_cb)
         {
-            stream->read_cb(stream, 0, &buf);
+            stream->read_cb(stream, 0, &buf); /*在回调函数里直接返回 */
         }
 
       } else {
@@ -867,7 +870,7 @@ static void uv__read(uv_stream_t* stream) {
           return;
         }
       }
-      stream->read_cb(stream, nread, &buf);
+      stream->read_cb(stream, nread, &buf); /* 处理读到数据 */
 
       /* Return if we didn't fill the buffer, there is no more data to read. */
       if (nread < buflen) {
@@ -934,7 +937,7 @@ static void uv__stream_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
 
   /* Ignore POLLHUP here. Even it it's set, there may still be data to read. */
   if (events & (UV__POLLIN | UV__POLLERR | UV__POLLHUP))
-    uv__read(stream);
+    uv__read(stream);  /* 读取socket 的数据 */
 
   if (uv__stream_fd(stream) == -1)
     return;  /* read_cb closed stream. */
@@ -1232,21 +1235,7 @@ int uv_is_writable(const uv_stream_t* stream) {
 }
 
 
-#if defined(__APPLE__)
-int uv___stream_fd(const uv_stream_t* handle) {
-  const uv__stream_select_t* s;
 
-  assert(handle->type == UV_TCP ||
-         handle->type == UV_TTY ||
-         handle->type == UV_NAMED_PIPE);
-
-  s = handle->select;
-  if (s != NULL)
-    return s->fd;
-
-  return handle->io_watcher.fd;
-}
-#endif /* defined(__APPLE__) */
 
 
 void uv__stream_close(uv_stream_t* handle) {

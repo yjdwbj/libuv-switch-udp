@@ -59,10 +59,7 @@ int uv_thread_create(uv_thread_t *tid, void (*entry)(void *arg), void *arg) {
   struct thread_ctx* ctx;
   int err;
   pthread_attr_t* attr;
-#if defined(__APPLE__)
-  pthread_attr_t attr_storage;
-  struct rlimit lim;
-#endif
+
 
   ctx = uv__malloc(sizeof(*ctx));
   if (ctx == NULL)
@@ -74,22 +71,8 @@ int uv_thread_create(uv_thread_t *tid, void (*entry)(void *arg), void *arg) {
   /* On OSX threads other than the main thread are created with a reduced stack
    * size by default, adjust it to RLIMIT_STACK.
    */
-#if defined(__APPLE__)
-  if (getrlimit(RLIMIT_STACK, &lim))
-    abort();
 
-  attr = &attr_storage;
-  if (pthread_attr_init(attr))
-    abort();
-
-  if (lim.rlim_cur != RLIM_INFINITY &&
-      lim.rlim_cur >= PTHREAD_STACK_MIN) {
-    if (pthread_attr_setstacksize(attr, lim.rlim_cur))
-      abort();
-  }
-#else
   attr = NULL;
-#endif
 
   err = pthread_create(tid, attr, uv__thread_start, ctx);
 

@@ -44,6 +44,11 @@ int client_initialize(struct client* client, struct server* server)
     client->server = server;
     client->uuid = NULL;
     client->pwd = NULL;
+    int n = 8192;
+    client->recv_buffer = (struct recv_buf_t*)
+                          malloc(sizeof(struct recv_buf_t)+n);
+    client->recv_buffer->len = n;
+    memset(client->recv_buffer->base,0,n);
 
     uv_tcp_init(server->loop, &client->socket);
     client->socket.data = client;
@@ -65,10 +70,8 @@ void client_destroy(struct client* client)
     }
     client->server = NULL;
     client->socket.data = NULL;
-
+    free(client->recv_buffer);
     free(client);
-
-    //if (client->command != NULL) free(client->command);
 }
 
 static void _on_alloc_buffer(uv_handle_t* handle, size_t suggested_size,uv_buf_t* buf)
@@ -76,12 +79,15 @@ static void _on_alloc_buffer(uv_handle_t* handle, size_t suggested_size,uv_buf_t
     struct client* client;
 
     client = handle->data;
+    // char *buf = (char *)malloc(8192);
+//    client->recv_buffer = (char *)malloc(suggested_size);
 
-    memset(client->buffer, 0, sizeof(client->buffer));
-   // uv_buf_t t = { NULL, 0 };
-  //  t =  uv_buf_init(client->buffer, sizeof(client->buffer));
-    buf->base = client->buffer;
-    buf->len = sizeof(client->buffer);
+//    memset(client->recv_buffer, 0, sizeof(client->recv_buffer));
+    // uv_buf_t t = { NULL, 0 };
+    //  t =  uv_buf_init(client->buffer, sizeof(client->buffer));
+    // buf->base = client->recv_buffer;
+    buf->base = client->recv_buffer->base;
+    buf->len = client->recv_buffer->len;
 }
 
 static void _on_disconnect(uv_handle_t* handle)
@@ -117,9 +123,11 @@ static void dev_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
         client_disconnect(client, _on_disconnect);
         return;
     }
-  //  fprintf(stderr, "DEV Client read: %s\t,strlen %d\n", &buf->base[2],
-   //         strlen(&buf->base[2]));
-    //parser_to_json(buf->base);
+
+    int nlen = (((*(unsigned short*)buf->base & 0xff00) >> 8)|((*(unsigned short*)buf->base & 0xff) << 8));
+
+    if(nread >0 && !nlen)
+        return;
 
     /*分析jso段*/
     struct json_object * jobj = json_tokener_parse(&(buf->base[2]));
@@ -137,28 +145,25 @@ static void dev_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
     struct json_object* obj = json_object_object_get(jobj,CMD);
     const char *cmd = json_object_get_string(obj);
 
-//    json_object_put(obj);
-    uv_write_t wr;
-
-    uv_buf_t sbuf = { NULL, 0 };
     if (!cmd)
     {
-        sbuf = uv_buf_init((char*)unkown_format,sizeof(unkown_cmd));
-        uv_write(&wr,stream,&sbuf,1,NULL);
+        uv_write_t wrt;
+        uv_buf_t  sbuf = uv_buf_init((char*)unkown_format,sizeof(unkown_cmd));
+
+        uv_write(&wrt,stream,&sbuf,1,NULL);
         /*未定义的key,应该断开本连接 */
 
         server_detach(client->server, client);
         client_disconnect(client, _on_disconnect);
-
+        json_object_put(jobj);
         return ;
     }
 
-   // printf("dev get command %s\n",cmd);
+    // printf("dev get command %s\n",cmd);
     if (!strcmp(cmd,LOGIN))
     {
         /*登录命令*/
-        //  struct json_object* uobj = json_object_object_get(jobj,"uuid");
-
+        uv_write_t wrt;
         const char *tuuid = json_object_get_string(json_object_object_get(jobj,UUID));
         int tlen = strlen(tuuid);
         client->uuid = (char*)malloc(tlen+1);
@@ -169,39 +174,46 @@ static void dev_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
         const char *tpwd =json_object_get_string(json_object_object_get(jobj,PWD));
         tlen=strlen(tpwd);
         client->pwd = malloc(tlen+1);
-        client->pwd[tlen] = '\0';
         memcpy(client->pwd,tpwd,tlen);
+        client->pwd[tlen] = '\0';
         /* 添加本客户端到链表里*/
         //g_hash_table_insert(server->c_gtable,stream->u.fd ,(gpointer)client);
 
-      //  printf(" srv type %d\n",client->server->stype);
+        //  printf(" srv type %d\n",client->server->stype);
         //g_hash_table_insert(client->server->c_gtable,
         //                    (gpointer)client->uuid,(gpointer)client);
         g_hash_table_insert(dev_table,
                             (gpointer)client->uuid,(gpointer)client);
-        //  printf("dev hash_table size %d\n",g_hash_table_size(dev_table));
+        printf("dev hash_table size %d\n",g_hash_table_size(dev_table));
         // g_hash_table_foreach(dev_table,print_key_value,NULL);
+        uv_buf_t  sbuf  = uv_buf_init(&msg_ok,sizeof(msg_ok));
+        uv_write(&wrt,stream,&sbuf,1,NULL);
 
-        sbuf = uv_buf_init(&msg_ok,sizeof(msg_ok));
-        uv_write(&wr,stream,&sbuf,1,NULL);
     }
     else if(!strcmp(cmd,KEEP))
     {
         /*心跳包*/
-        uv_write(&wr,stream,buf,1,NULL);
+        uv_write_t wrt;
+        //char *kepbuf = (char *)malloc(nread+1);
+       // memcpy(kepbuf,buf->base,nread);
+        //kepbuf[nread] = '\0';
+        uv_buf_t sbuf = uv_buf_init(buf->base,nread);
+        uv_write(&wrt,stream,&sbuf,1,NULL);
+        //free(kepbuf);
+
     }
     else if(!strcmp(cmd,CONN))
     {
 
         /*连接请求*/
-
+        uv_write_t wrt;
         gpointer fd = json_object_get_int(json_object_object_get(jobj,AID));
-       // printf("get aid is %d\n",fd);
+        // printf("get aid is %d\n",fd);
         struct client *appclient =g_hash_table_lookup(app_table,&fd);
 
         if (appclient)
         {
-          //  printf(" I got some one connect request ");
+            //  printf(" I got some one connect request ");
             struct json_object* connjson =   json_object_new_object();
             json_object_object_add(connjson,ADDR,json_object_object_get(jobj,ADDR));
             json_object_object_add(connjson,UUID,json_object_object_get(jobj,UUID));
@@ -215,32 +227,27 @@ static void dev_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
             memcpy(&connbuf[connlen],(char*)SUFIX,4);
             connbuf[connlen+4] = '\0';
 
+            uv_buf_t sbuf = uv_buf_init(connbuf,connlen+4);
 
-            sbuf = uv_buf_init(connbuf,connlen+4);
-
-            uv_write(&wr,(uv_stream_t*)&appclient->socket,&sbuf,1,NULL);
+            uv_write(&wrt,(uv_stream_t*)&appclient->socket,&sbuf,1,NULL);
             json_object_put(connjson);
-            free(connbuf);
+         //   free(connbuf);
             printf("app table size %d\n",g_hash_table_size(app_table));
             server_detach(appclient->server, appclient);
             client_disconnect(appclient, _on_disconnect);
-
             //g_hash_table_remove(app_table,&fd);
-
         }
 
     }
     else
     {
         /*未知命令*/
-        sbuf = uv_buf_init((char*)unkown_cmd,sizeof(unkown_cmd));
-        int r = uv_write(&wr,stream,&sbuf,1,NULL);
+        uv_write_t wrt;
+        uv_buf_t sbuf = uv_buf_init((char*)unkown_cmd,sizeof(unkown_cmd));
+        int r = uv_write(&wrt,stream,&sbuf,1,NULL);
     }
-    json_object_put(jobj); // 清理内存
+    json_object_put(jobj);
 }
-
-
-
 
 static void app_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
 {
@@ -260,8 +267,8 @@ static void app_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
     }
 
     uv_buf_t sbuf = { NULL, 0 };
-  //  fprintf(stderr, "APP Client read: %s\t ,len %d\n", &buf->base[2],
-   //         strlen(&buf->base[2]));
+    //  fprintf(stderr, "APP Client read: %s\t ,len %d\n", &buf->base[2],
+    //         strlen(&buf->base[2]));
     //parser_to_json(buf->base);
     /*分析jso段*/
     struct json_object * jobj = json_tokener_parse(&(buf->base[2]));
@@ -270,30 +277,31 @@ static void app_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
         //  printf("app recv json obj.to_string() = %s\n",
         server_detach(client->server, client);
         client_disconnect(client, _on_disconnect);
-       // printf(" app recv wrong format data\n");
+        // printf(" app recv wrong format data\n");
         return;
     }
-    uv_write_t wr;
+
 
     //printf("uuid is %s\n",clinet->uuid);
     struct json_object* cmdobj = json_object_object_get(jobj,CMD);
     char *cmd = json_object_get_string(cmdobj);
     if (!cmd)
     {
-      //  printf("recv unkown cmd, %s\n",buf->base);
+        //  printf("recv unkown cmd, %s\n",buf->base);
 
-
-        sbuf = uv_buf_init((char*)unkown_cmd,sizeof(unkown_cmd));
-        int r = uv_write(&wr,stream,&sbuf,1,NULL);
+        uv_write_t wrt;
+        uv_buf_t sbuf = uv_buf_init((char*)unkown_cmd,sizeof(unkown_cmd));
+        int r = uv_write(&wrt,stream,&sbuf,1,NULL);
         server_detach(client->server, client);
         client_disconnect(client, _on_disconnect);
         /*未定义的key,应该断开本连接 */
+        json_object_put(jobj);
         return ;
     }
     if (!strcmp(cmd,CONN))
     {
         /*登录命令*/
-
+        uv_write_t wrt;
         struct json_object* uuidjson =  json_object_object_get(jobj,UUID);
         const char *uvalue = json_object_get_string(uuidjson);
         // struct json_object* pobj = json_object_object_get(jobj,"pwd");
@@ -305,12 +313,12 @@ static void app_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
 
         struct client* devclient = g_hash_table_lookup(dev_table,
                                    (gpointer)uvalue);
-      //  g_hash_table_foreach(dev_table,print_key_value,NULL);
+        //  g_hash_table_foreach(dev_table,print_key_value,NULL);
 
         if ((devclient != NULL) && !strcmp(pvalue,
                                            devclient->pwd))
         {
-          //  printf("app login ok\n");
+            //  printf("app login ok\n");
             /*app 端认证成功*/
             /* 添加本客户端到链表里*/
             //g_hash_table_insert(server->c_gtable,stream->u.fd ,(gpointer)client);
@@ -337,12 +345,11 @@ static void app_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
             memcpy(&connbuf[connlen],(char*)SUFIX,4);
             connbuf[connlen+4]='\0';
 
-            sbuf = uv_buf_init(connbuf,connlen+4);
-            uv_write(&wr,(uv_stream_t*)&devclient->socket,&sbuf,1,NULL);
-            //  printf("conn data is %s\n",sbuf.base);
-          //  printf("app auth ok send msg to dev\n");
-            free(connbuf);
+            uv_buf_t sbuf = uv_buf_init(connbuf,connlen+4);
+            uv_write(&wrt,(uv_stream_t*)&devclient->socket,&sbuf,1,NULL);
+
             json_object_put(connjson);
+            free(connbuf);
 
         }
 
@@ -351,14 +358,13 @@ static void app_on_read(uv_stream_t* stream, ssize_t nread, uv_buf_t *buf)
     {
         /*未知命令*/
 
-
-        sbuf = uv_buf_init((char*)unkown_cmd,strlen(unkown_cmd));
-        int r = uv_write(&wr,stream,&sbuf,1,NULL);
+        uv_write_t wrt;
+        uv_buf_t sbuf = uv_buf_init((char*)unkown_cmd,strlen(unkown_cmd));
+        int r = uv_write(&wrt,stream,&sbuf,1,NULL);
 
 
     }
-    json_object_put(jobj);
-
+   json_object_put(jobj);
 
 }
 

@@ -1,12 +1,12 @@
 # depslib dependency file v1.0
-1456213832 source:/home/yjdwbj/libuv-server/client.c
+1456301769 source:/home/yjdwbj/libuv-server/client.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	"core.h"
 	"json-c/json.h"
 
-1456213129 /home/yjdwbj/libuv-server/core.h
+1456295594 /home/yjdwbj/libuv-server/core.h
 	<uv.h>
 	<glib.h>
 
@@ -88,12 +88,13 @@
 
 1451353459 /home/yjdwbj/libuv-server/queue.h
 
-1456208592 source:/home/yjdwbj/libuv-server/main.c
+1456307960 source:/home/yjdwbj/libuv-server/main.c
 	<stdio.h>
 	<unistd.h>
 	"core.h"
+	<pthread.h>
 
-1456198439 source:/home/yjdwbj/libuv-server/server.c
+1456303430 source:/home/yjdwbj/libuv-server/server.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -395,7 +396,7 @@
 	<string.h>
 	<unistd.h>
 
-1456221122 source:/home/yjdwbj/libuv-server/src/unix/stream.c
+1456305666 source:/home/yjdwbj/libuv-server/src/unix/stream.c
 	"uv.h"
 	"internal.h"
 	<stdio.h>
@@ -410,7 +411,7 @@
 	<unistd.h>
 	<limits.h>
 
-1451294796 source:/home/yjdwbj/libuv-server/src/unix/tcp.c
+1456303335 source:/home/yjdwbj/libuv-server/src/unix/tcp.c
 	"uv.h"
 	"internal.h"
 	<stdlib.h>
@@ -418,7 +419,7 @@
 	<assert.h>
 	<errno.h>
 
-1456211618 source:/home/yjdwbj/libuv-server/src/unix/thread.c
+1456307692 source:/home/yjdwbj/libuv-server/src/unix/thread.c
 	"uv.h"
 	"internal.h"
 	<pthread.h>
@@ -489,7 +490,7 @@
 1451372703 /home/yjdwbj/libuv-server/json-c/linkhash.h
 	"json_object.h"
 
-1451372703 /home/yjdwbj/libuv-server/json-c/json_object.h
+1456299576 /home/yjdwbj/libuv-server/json-c/json_object.h
 	"json_inttypes.h"
 
 1451372703 /home/yjdwbj/libuv-server/json-c/json_inttypes.h
@@ -537,7 +538,7 @@
 	"config.h"
 	"json_c_version.h"
 
-1451372708 source:/home/yjdwbj/libuv-server/json-c/json_object.c
+1456299576 source:/home/yjdwbj/libuv-server/json-c/json_object.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>

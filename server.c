@@ -106,6 +106,7 @@ static void _on_connect(uv_stream_t* stream, int status)
 
     if (uv_accept(stream, (uv_stream_t*)&client->socket) != 0)
     {
+        printf("accept error\n");
         uv_close((uv_handle_t*)&client->socket, NULL);
         client_destroy(client);
         free(client);
@@ -190,7 +191,10 @@ int server_start(struct server* server,struct sockaddr_in* addr)
     uv_tcp_bind(&server->socket, addr,AF_INET);
 
     /*listening ,回调函数_on_connect,backlog 可以加大*/
-    uv_listen((uv_stream_t*)&server->socket, 32, _on_connect);
+    if(uv_listen((uv_stream_t*)&server->socket, 2048, _on_connect))
+    {
+        printf("listen server error\n");
+    }
 
     return 0;
 }

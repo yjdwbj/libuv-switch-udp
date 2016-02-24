@@ -62,13 +62,18 @@ static char msg_ok[] = {0x0,0xf,0x7b,0x22,0x6d,0x73,0x67,0x22,0x3a,0x20,0x22,0x6
 
 struct server;
 
+struct recv_buf_t{
+    int len;
+    char base[0];
+};
 
 struct client
 {
 	//uv_loop_t* loop;
 	struct server* server;
 	uv_tcp_t   socket;
-	char  buffer[8192];
+	struct recv_buf_t   *recv_buffer;
+	//char  *recv_buffer;
 	char  *uuid;  /*uuid 做为一个用户名*/
 	char  *pwd;      /*uuid 访问密码*/
 };
@@ -106,7 +111,6 @@ typedef struct __ThreadObj_t
 
 typedef struct __ThreadArg_t
 {
-    uv_loop_t* loop_;
     struct server* server_;
     int sync_flag_;
 }T_THREADARG;
